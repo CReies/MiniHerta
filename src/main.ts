@@ -1,6 +1,7 @@
 import { catalogNames } from "./domain/catalog.js";
 import { importInventory, loadSavedInventory, saveInventory, serializeInventory } from "./domain/inventory.js";
 import { downloadJson, fetchJson, readJsonFile } from "./app/json-file.js";
+import { fetchRemoteRuns } from "./app/remote-runs.js";
 import { createAppState, resetInventory, setInventory, setRuns } from "./app/state.js";
 import { getElements, getFilters } from "./ui/dom.js";
 import { loadTheme, toggleTheme } from "./ui/theme.js";
@@ -15,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadTheme(els);
   state.inventory = loadSavedInventory();
   bindEvents();
-  loadJson();
+  loadRuns();
 });
 
 function bindEvents(): void {
@@ -37,11 +38,28 @@ function bindEvents(): void {
   }
 }
 
-async function loadJson(): Promise<void> {
+async function loadRuns(): Promise<void> {
+  const hasLocalRuns = await loadLocalRuns();
+  void loadRemoteRuns(hasLocalRuns);
+}
+
+async function loadLocalRuns(): Promise<boolean> {
   try {
     replaceRuns(await fetchJson<RawRun[]>("scrapped.json"));
+    return true;
   } catch {
-    els.results.innerHTML = `<div class="empty">No pude cargar scrapped.json automáticamente. Abre esta carpeta con un servidor local o usa el botón "Cargar runs".</div>`;
+    els.results.innerHTML = `<div class="empty">Descargando runs...</div>`;
+    return false;
+  }
+}
+
+async function loadRemoteRuns(hasFallback: boolean): Promise<void> {
+  try {
+    replaceRuns(await fetchRemoteRuns());
+  } catch {
+    if (!hasFallback) {
+      els.results.innerHTML = `<div class="empty">No pude descargar las runs. Abre esta carpeta con un servidor local o usa el botón "Cargar runs".</div>`;
+    }
   }
 }
 
