@@ -1,0 +1,6 @@
+dist
+node_modules
+banner-data/cleaned
+banner-data/*.json
+scrapped.json
+pnpm-lock.yaml

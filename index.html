@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>0-Cycle Team Finder</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Honkai: Star Rail</p>
+        <h1>Buscador de equipos 0-cycle</h1>
+      </div>
+      <div class="top-actions">
+        <label class="import-button">
+          <input id="jsonFile" type="file" accept="application/json" />
+          Cargar runs
+        </label>
+        <label class="import-button">
+          <input id="inventoryFile" type="file" accept="application/json" />
+          Importar inventario
+        </label>
+        <button id="exportInventory" type="button">Exportar inventario</button>
+        <button id="themeToggle" type="button" aria-pressed="false">Modo oscuro</button>
+        <button id="resetBuild" type="button">Reiniciar selección</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <aside class="panel inventory-panel">
+        <section>
+          <div class="section-heading">
+            <div>
+              <h2>Personajes</h2>
+              <p id="characterCount">0 seleccionados</p>
+            </div>
+            <input id="characterSearch" type="search" placeholder="Buscar personaje" />
+          </div>
+          <div id="characters" class="inventory-list"></div>
+        </section>
+
+        <section>
+          <div class="section-heading">
+            <div>
+              <h2>Light cones</h2>
+              <p id="lightConeCount">0 seleccionados</p>
+            </div>
+            <input id="lightConeSearch" type="search" placeholder="Buscar light cone" />
+          </div>
+          <div id="lightCones" class="inventory-list"></div>
+        </section>
+      </aside>
+
+      <section class="results-panel">
+        <div class="filters panel">
+          <div class="filter-row">
+            <label>
+              Boss
+              <select id="bossFilter"></select>
+            </label>
+            <label>
+              Resultado
+              <select id="resultMode">
+                <option value="complete">Solo posibles ahora</option>
+                <option value="near">Posibles y cercanos</option>
+                <option value="all">Todos con faltantes</option>
+              </select>
+            </label>
+            <label>
+              Light cones
+              <select id="lcMode">
+                <option value="strict">Exigir LC y superimposición</option>
+                <option value="name">Exigir solo el LC</option>
+                <option value="ignore">Ignorar light cones</option>
+              </select>
+            </label>
+          </div>
+          <div class="filter-row">
+            <label>
+              Buscar en resultados
+              <input id="resultSearch" type="search" placeholder="Personaje, autor, light cone" />
+            </label>
+            <label>
+              Ordenar
+              <select id="sortMode">
+                <option value="missing">Menos faltantes</option>
+                <option value="cost">Menor inversión 5★ limitada</option>
+                <option value="date">Más recientes</option>
+              </select>
+            </label>
+          </div>
+        </div>
+
+        <div class="summary-strip">
+          <div>
+            <span id="possibleCount">0</span>
+            <small>posibles</small>
+          </div>
+          <div>
+            <span id="nearCount">0</span>
+            <small>cercanos</small>
+          </div>
+          <div>
+            <span id="runCount">0</span>
+            <small>runs analizados</small>
+          </div>
+        </div>
+
+        <div id="results" class="results"></div>
+      </section>
+    </main>
+
+    <template id="inventoryRowTemplate">
+      <article class="inventory-row">
+        <label class="owned-toggle">
+          <input type="checkbox" />
+          <img class="inventory-image" alt="" loading="lazy" />
+          <span class="name"></span>
+        </label>
+        <label class="level-control">
+          <span></span>
+          <select></select>
+        </label>
+      </article>
+    </template>
+
+    <script type="module" src="dist/main.js"></script>
+  </body>
+</html>
