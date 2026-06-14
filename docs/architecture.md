@@ -12,20 +12,51 @@ Aunque `astro` esta instalado para una migracion futura, la app actual se sirve 
 index.html
 styles.css
 src/main.ts
+  app/
+    json-file.ts
+    results.ts
+    state.ts
   domain/
+    catalog.ts
     inventory.ts
     normalize.ts
-    rarity.ts
     scoring.ts
     types.ts
   ui/
+    bosses.ts
     dom.ts
+    inventory.ts
     render.ts
+    results.ts
     theme.ts
   utils/
     text.ts
 dist/
 ```
+
+`src/main.ts`
+
+- Hace bootstrap de la app.
+- Conecta eventos DOM con acciones de aplicacion.
+- No contiene reglas de dominio, parsing de archivos ni detalles de render.
+
+## Aplicacion
+
+`src/app/state.ts`
+
+- Mantiene la forma del estado runtime.
+- Crea estado inicial, reemplaza runs, reemplaza/reset inventory y reconcilia inventario contra catalogo.
+
+`src/app/results.ts`
+
+- Selecciona resultados visibles desde estado + filtros.
+- Encapsula evaluacion, filtrado por busqueda/modo y ordenamiento.
+
+`src/app/json-file.ts`
+
+- Lee JSON remoto/local.
+- Centraliza importacion desde `<input type="file">`.
+- Centraliza descarga de JSON.
 
 ## Dominio
 
@@ -41,16 +72,19 @@ dist/
 - Soporta claves `characters`, `personajes`, `lightCones`, `light_cones` y `conos`.
 - Limita personajes a `E0-E6` y light cones a `S1-S5`.
 
-`src/domain/rarity.ts`
+`src/domain/catalog.ts`
 
-- Mantiene listas explicitas de personajes y light cones 4 estrellas.
-- Todo lo que no esta en esas listas se considera 5 estrellas para scoring.
+- Construye el catalogo de personajes y light cones a partir de los runs cargados.
+- Centraliza metadatos de items: tipo, nombre canonico, labels localizables, rareza y asset.
+- Usa `src/generated/assets.ts` como manifiesto generado de imagenes disponibles.
+- Todo lo que no esta en las listas 4 estrellas se considera 5 estrellas para scoring.
 
 `src/domain/scoring.ts`
 
 - Evalua cada run contra el inventario.
 - Calcula faltantes y `missingScore`.
 - Aplica filtros, modo de resultado y ordenamiento.
+- Consulta rarezas en el catalogo, no en listas duplicadas.
 
 ## Scoring de Cercania
 
@@ -77,16 +111,27 @@ Estas reglas reflejan:
 
 ## UI
 
+`src/ui/render.ts`
+
+- Fachada pequena que reexporta renders especificos.
+
+`src/ui/bosses.ts`
+
+- Renderiza opciones del filtro de boss.
+
+`src/ui/inventory.ts`
+
+- Renderiza listas de personajes y light cones.
+- Encapsula creacion de filas, imagenes, selects y eventos por item.
+
+`src/ui/results.ts`
+
+- Renderiza contadores, cards de runs, miembros y chips de faltantes.
+
 `src/ui/dom.ts`
 
 - Centraliza el acceso a elementos DOM.
 - Lee filtros actuales desde controles.
-
-`src/ui/render.ts`
-
-- Renderiza inventario, resumen y cards de runs.
-- Muestra el score en badges de equipos cercanos.
-- Muestra chips de faltantes con tooltip de rareza, tipo y puntaje.
 
 `src/ui/theme.ts`
 
@@ -101,11 +146,10 @@ Importante: si se agrega un nuevo archivo `.ts`, hay que agregarlo a la lista `s
 
 ## Estado
 
-`src/main.ts` mantiene el estado de runtime:
+`src/app/state.ts` mantiene el estado de runtime:
 
 - `runs`: runs normalizados.
-- `characters`: personajes unicos presentes en runs.
-- `lightCones`: light cones unicos presentes en runs.
+- `catalog`: personajes y light cones unicos presentes en runs, con metadatos centralizados.
 - `inventory`: inventario actual del usuario.
 
 El inventario se guarda bajo la clave `herta-0cycle-inventory-v1`.

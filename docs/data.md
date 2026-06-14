@@ -7,6 +7,7 @@
 - Dataset principal de runs.
 - La app toma runs con `subcategory = "0-Cycle"` o `metric_value = 0`.
 - Cada run contiene hasta cuatro personajes y cuatro light cones.
+- Tambien alimenta el catalogo runtime de items. El catalogo cruza esos nombres con assets generados, rarezas y labels preparados para traducciones futuras.
 
 `banner-data/*.txt`
 
@@ -95,7 +96,7 @@ La app acepta inventarios con estas claves:
 
 Al importar:
 
-- Se descartan personajes/conos que no existan en los runs cargados.
+- Se descartan personajes/conos que no existan en el catalogo construido desde los runs cargados.
 - Se ajustan valores fuera de rango.
 - Se guarda el resultado en `localStorage`.
 

@@ -1,4 +1,4 @@
-import { getCharacterRarity, getLightConeRarity } from "./rarity.js";
+import { itemRarity, type ItemCatalog } from "./catalog.js";
 import type { EvaluatedRun, FilterState, Inventory, MissingItem, Run, TeamMember } from "./types.js";
 import { normalizeText } from "../utils/text.js";
 
@@ -15,8 +15,13 @@ const scoreTable = {
   },
 } as const;
 
-export function evaluateRun(run: Run, inventory: Inventory, lcMode: FilterState["lcMode"]): EvaluatedRun {
-  const missing = run.team.flatMap((member) => evaluateMember(member, inventory, lcMode));
+export function evaluateRun(
+  run: Run,
+  inventory: Inventory,
+  lcMode: FilterState["lcMode"],
+  catalog: ItemCatalog
+): EvaluatedRun {
+  const missing = run.team.flatMap((member) => evaluateMember(member, inventory, lcMode, catalog));
   return {
     ...run,
     missing,
@@ -48,10 +53,15 @@ export function compareRuns(a: EvaluatedRun, b: EvaluatedRun, mode: FilterState[
   return a.missingScore - b.missingScore || a.missing.length - b.missing.length || a.limitedCost - b.limitedCost;
 }
 
-function evaluateMember(member: TeamMember, inventory: Inventory, lcMode: FilterState["lcMode"]): MissingItem[] {
+function evaluateMember(
+  member: TeamMember,
+  inventory: Inventory,
+  lcMode: FilterState["lcMode"],
+  catalog: ItemCatalog
+): MissingItem[] {
   const missing: MissingItem[] = [];
   const ownedEidolon = inventory.characters.get(member.char);
-  const characterRarity = getCharacterRarity(member.char);
+  const characterRarity = itemRarity(catalog, "character", member.char);
 
   if (ownedEidolon === undefined) {
     missing.push(buildMissingItem("character", member.char, characterRarity, member.eidolon, null));
@@ -61,7 +71,7 @@ function evaluateMember(member: TeamMember, inventory: Inventory, lcMode: Filter
 
   if (lcMode !== "ignore" && member.lc) {
     const ownedSuperimp = inventory.lightCones.get(member.lc);
-    const lightConeRarity = getLightConeRarity(member.lc);
+    const lightConeRarity = itemRarity(catalog, "lightCone", member.lc);
 
     if (ownedSuperimp === undefined) {
       missing.push(buildMissingItem("lightCone", member.lc, lightConeRarity, member.superimp, null));

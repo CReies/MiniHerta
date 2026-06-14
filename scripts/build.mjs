@@ -9,16 +9,21 @@ const outRoot = join(root, "dist");
 
 const sources = [
   "main.ts",
+  "app/json-file.ts",
+  "app/results.ts",
+  "app/state.ts",
+  "domain/catalog.ts",
   "domain/inventory.ts",
   "domain/normalize.ts",
-  "domain/rarity.ts",
   "domain/scoring.ts",
   "domain/types.ts",
   "generated/assets.ts",
+  "ui/bosses.ts",
   "ui/dom.ts",
+  "ui/inventory.ts",
   "ui/render.ts",
+  "ui/results.ts",
   "ui/theme.ts",
-  "utils/assets.ts",
   "utils/text.ts",
 ];
 

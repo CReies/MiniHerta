@@ -1,30 +1,15 @@
-import { applyResultMode, compareRuns, evaluateRun, matchesFilters } from "./domain/scoring.js";
-import {
-  createEmptyInventory,
-  importInventory,
-  loadSavedInventory,
-  reconcileInventory,
-  saveInventory,
-  serializeInventory,
-} from "./domain/inventory.js";
+import { catalogNames } from "./domain/catalog.js";
+import { importInventory, loadSavedInventory, saveInventory, serializeInventory } from "./domain/inventory.js";
+import { downloadJson, fetchJson, readJsonFile } from "./app/json-file.js";
+import { createAppState, resetInventory, setInventory, setRuns } from "./app/state.js";
 import { getElements, getFilters } from "./ui/dom.js";
 import { loadTheme, toggleTheme } from "./ui/theme.js";
-import { normalizeRuns } from "./domain/normalize.js";
+import { selectResults } from "./app/results.js";
 import { renderBossOptions, renderInventory, renderResults } from "./ui/render.js";
-import type { Inventory, RawRun, Run, SerializedInventory } from "./domain/types.js";
+import type { RawRun, SerializedInventory } from "./domain/types.js";
 
 const els = getElements();
-const state: {
-  runs: Run[];
-  characters: string[];
-  lightCones: string[];
-  inventory: Inventory;
-} = {
-  runs: [],
-  characters: [],
-  lightCones: [],
-  inventory: createEmptyInventory(),
-};
+const state = createAppState();
 
 document.addEventListener("DOMContentLoaded", () => {
   loadTheme(els);
@@ -39,14 +24,12 @@ function bindEvents(): void {
   els.exportInventory.addEventListener("click", exportInventory);
   els.themeToggle.addEventListener("click", () => toggleTheme(els));
   els.resetBuild.addEventListener("click", () => {
-    state.inventory = createEmptyInventory();
+    resetInventory(state);
     persistAndRenderInventory();
   });
 
   for (const el of [els.characterSearch, els.lightConeSearch]) {
-    el.addEventListener("input", () =>
-      renderInventory(els, state.inventory, state.characters, state.lightCones, persistAndRenderInventory)
-    );
+    el.addEventListener("input", () => renderInventory(els, state.inventory, state.catalog, persistAndRenderInventory));
   }
 
   for (const el of [els.bossFilter, els.resultMode, els.lcMode, els.resultSearch, els.sortMode]) {
@@ -56,84 +39,50 @@ function bindEvents(): void {
 
 async function loadJson(): Promise<void> {
   try {
-    const response = await fetch("scrapped.json", { cache: "no-store" });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    setRuns((await response.json()) as RawRun[]);
+    replaceRuns(await fetchJson<RawRun[]>("scrapped.json"));
   } catch {
     els.results.innerHTML = `<div class="empty">No pude cargar scrapped.json automáticamente. Abre esta carpeta con un servidor local o usa el botón "Cargar runs".</div>`;
   }
 }
 
 function handleRunImport(event: Event): void {
-  readJsonFile<RawRun[]>(event, setRuns, "Ese archivo no parece ser un JSON válido de runs.");
+  readJsonFile<RawRun[]>(
+    event,
+    replaceRuns,
+    () => (els.results.innerHTML = `<div class="empty">Ese archivo no parece ser un JSON válido de runs.</div>`)
+  );
 }
 
 function handleInventoryImport(event: Event): void {
   readJsonFile<SerializedInventory>(
     event,
     (data) => {
-      state.inventory = importInventory(data, { characters: state.characters, lightCones: state.lightCones });
+      setInventory(state, importInventory(data, catalogNames(state.catalog)));
       persistAndRenderInventory();
     },
-    "Ese inventario no parece ser un JSON válido."
+    () => (els.results.innerHTML = `<div class="empty">Ese inventario no parece ser un JSON válido.</div>`)
   );
 }
 
-function setRuns(rawRuns: RawRun[]): void {
-  state.runs = normalizeRuns(rawRuns);
-  state.characters = [...new Set(state.runs.flatMap((run) => run.team.map((member) => member.char)))].sort();
-  state.lightCones = [
-    ...new Set(state.runs.flatMap((run) => run.team.map((member) => member.lc)).filter(Boolean)),
-  ].sort();
-
-  reconcileInventory(state.inventory, state.characters, state.lightCones);
+function replaceRuns(rawRuns: RawRun[]): void {
+  setRuns(state, rawRuns);
   renderBossOptions(els, state.runs);
-  renderInventory(els, state.inventory, state.characters, state.lightCones, persistAndRenderInventory);
+  renderInventory(els, state.inventory, state.catalog, persistAndRenderInventory);
   renderCurrentResults();
 }
 
 function persistAndRenderInventory(): void {
   saveInventory(state.inventory);
-  renderInventory(els, state.inventory, state.characters, state.lightCones, persistAndRenderInventory);
+  renderInventory(els, state.inventory, state.catalog, persistAndRenderInventory);
   renderCurrentResults();
 }
 
 function renderCurrentResults(): void {
-  const filters = getFilters(els);
-  const evaluated = state.runs
-    .map((run) => evaluateRun(run, state.inventory, filters.lcMode))
-    .filter((run) => matchesFilters(run, filters));
-
-  const visible = applyResultMode(evaluated, filters.resultMode).sort((a, b) => compareRuns(a, b, filters.sortMode));
-  renderResults(els, evaluated, visible);
+  const { evaluated, visible } = selectResults(state, getFilters(els));
+  renderResults(els, evaluated, visible, state.catalog);
 }
 
 function exportInventory(): void {
-  const data = JSON.stringify(serializeInventory(state.inventory), null, 2);
-  const blob = new Blob([data], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `herta-inventario-${new Date().toISOString().slice(0, 10)}.json`;
-  document.body.appendChild(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
-}
-
-function readJsonFile<T>(event: Event, onRead: (data: T) => void, errorMessage: string): void {
-  const input = event.target as HTMLInputElement;
-  const [file] = Array.from(input.files || []);
-  if (!file) return;
-
-  const reader = new FileReader();
-  reader.onload = () => {
-    try {
-      onRead(JSON.parse(String(reader.result)) as T);
-      input.value = "";
-    } catch {
-      els.results.innerHTML = `<div class="empty">${errorMessage}</div>`;
-    }
-  };
-  reader.readAsText(file);
+  const filename = `herta-inventario-${new Date().toISOString().slice(0, 10)}.json`;
+  downloadJson(filename, serializeInventory(state.inventory));
 }
