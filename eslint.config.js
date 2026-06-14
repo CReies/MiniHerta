@@ -15,10 +15,12 @@ export default [
       sourceType: "module",
       globals: {
         Blob: "readonly",
+        Buffer: "readonly",
         FileReader: "readonly",
         URL: "readonly",
         console: "readonly",
         document: "readonly",
+        fetch: "readonly",
         clearTimeout: "readonly",
         localStorage: "readonly",
         process: "readonly",

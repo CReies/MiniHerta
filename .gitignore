@@ -32,3 +32,4 @@ Thumbs.db
 
 # Local/generated data
 scrapped.json
+!scrapped.json
