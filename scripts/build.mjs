@@ -10,6 +10,7 @@ const outRoot = join(root, "dist");
 const sources = [
   "main.ts",
   "app/json-file.ts",
+  "app/remote-runs.ts",
   "app/results.ts",
   "app/state.ts",
   "domain/catalog.ts",
