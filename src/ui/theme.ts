@@ -4,8 +4,7 @@ const themeStorageKey = "herta-0cycle-theme-v1";
 
 export function loadTheme(els: Elements): void {
   const saved = localStorage.getItem(themeStorageKey);
-  const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)").matches;
-  setTheme(saved || (prefersDark ? "dark" : "light"), els);
+  setTheme(saved === "light" ? "light" : "dark", els);
 }
 
 export function toggleTheme(els: Elements): void {
@@ -16,7 +15,11 @@ export function toggleTheme(els: Elements): void {
 
 function setTheme(theme: string, els: Elements): void {
   const normalized = theme === "dark" ? "dark" : "light";
+  const nextLabel = normalized === "dark" ? "Modo claro" : "Modo oscuro";
   document.documentElement.dataset.theme = normalized;
-  els.themeToggle.textContent = normalized === "dark" ? "Modo claro" : "Modo oscuro";
+  const label = els.themeToggle.querySelector<HTMLElement>("[data-theme-label]");
+  if (label) label.textContent = nextLabel;
+  els.themeToggle.setAttribute("aria-label", nextLabel);
+  els.themeToggle.title = nextLabel;
   els.themeToggle.setAttribute("aria-pressed", String(normalized === "dark"));
 }

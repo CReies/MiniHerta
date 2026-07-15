@@ -24,7 +24,7 @@ export type StateListener = (state: AppState) => void;
 
 const defaultFilters: FilterState = {
   boss: "Todos",
-  resultMode: "complete",
+  resultMode: "all",
   lcMode: "strict",
   resultSearch: "",
   sortMode: "missing",

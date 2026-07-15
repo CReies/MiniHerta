@@ -35,6 +35,13 @@ test("the observable store emits immutable inventory replacements", () => {
   assert.equal(store.snapshot.inventory.characters.get("Acheron"), 2);
 });
 
+test("the result list defaults to every run ordered by the least missing investment", () => {
+  const store = new AppStore();
+
+  assert.equal(store.snapshot.filters.resultMode, "all");
+  assert.equal(store.snapshot.filters.sortMode, "missing");
+});
+
 test("the application falls back to the next run repository", async () => {
   const saved = [];
   const inventoryRepository = {

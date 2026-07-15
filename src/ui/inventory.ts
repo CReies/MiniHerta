@@ -100,6 +100,7 @@ function createInventoryRow(item: string, options: InventoryListOptions): HTMLEl
   configureCheckbox(checkbox, item, options.owned);
   configureImage(image, options.catalog, options.kind, item);
   configureLevelSelect(select, item, options);
+  row.classList.toggle("is-owned", options.owned.has(item));
 
   name.textContent = item;
   controlLabel.textContent = options.label;

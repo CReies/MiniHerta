@@ -43,13 +43,7 @@ export class AppViewController {
       this.application.updateInventorySearch("lightCone", this.els.lightConeSearch.value)
     );
 
-    for (const element of [
-      this.els.bossFilter,
-      this.els.resultMode,
-      this.els.lcMode,
-      this.els.resultSearch,
-      this.els.sortMode,
-    ]) {
+    for (const element of [this.els.bossFilter, this.els.lcMode, this.els.resultSearch]) {
       element.addEventListener("input", () => this.application.updateFilters(getFilters(this.els)));
     }
   }

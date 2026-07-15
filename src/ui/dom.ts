@@ -1,4 +1,4 @@
-import type { FilterState, LcMode, ResultMode, SortMode } from "../domain/types.js";
+import type { FilterState, LcMode } from "../domain/types.js";
 
 export interface Elements {
   jsonFile: HTMLInputElement;
@@ -11,10 +11,8 @@ export interface Elements {
   characters: HTMLElement;
   lightCones: HTMLElement;
   bossFilter: HTMLSelectElement;
-  resultMode: HTMLSelectElement;
   lcMode: HTMLSelectElement;
   resultSearch: HTMLInputElement;
-  sortMode: HTMLSelectElement;
   possibleCount: HTMLElement;
   nearCount: HTMLElement;
   runCount: HTMLElement;
@@ -35,10 +33,8 @@ const ids = [
   "characters",
   "lightCones",
   "bossFilter",
-  "resultMode",
   "lcMode",
   "resultSearch",
-  "sortMode",
   "possibleCount",
   "nearCount",
   "runCount",
@@ -55,13 +51,11 @@ export function getElements(): Elements {
   } as Elements;
 }
 
-export function getFilters(els: Elements): FilterState {
+export function getFilters(els: Elements): Partial<FilterState> {
   return {
     boss: els.bossFilter.value,
-    resultMode: els.resultMode.value as ResultMode,
     lcMode: els.lcMode.value as LcMode,
     resultSearch: els.resultSearch.value,
-    sortMode: els.sortMode.value as SortMode,
   };
 }
 
