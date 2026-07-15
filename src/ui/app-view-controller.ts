@@ -77,12 +77,15 @@ export class AppViewController {
 
   private syncView(): void {
     const view = window.location.hash === "#inventario" ? "inventario" : "team-finder";
+    const viewPages = this.els.viewPages ?? Array.from(document.querySelectorAll<HTMLElement>("[data-view]"));
+    const viewLinks =
+      this.els.viewLinks ?? Array.from(document.querySelectorAll<HTMLAnchorElement>("[data-view-link]"));
 
-    for (const page of this.els.viewPages) {
+    for (const page of viewPages) {
       page.hidden = page.dataset.view !== view;
     }
 
-    for (const link of this.els.viewLinks) {
+    for (const link of viewLinks) {
       const active = link.dataset.viewLink === view;
       link.classList.toggle("is-active", active);
       if (active) link.setAttribute("aria-current", "page");

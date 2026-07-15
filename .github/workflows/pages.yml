@@ -48,6 +48,7 @@ jobs:
           deploy_version="${GITHUB_SHA::12}"
           sed -i "s|href=\"styles.css\"|href=\"styles.css?v=${deploy_version}\"|" _site/index.html
           sed -i "s|src=\"dist/main.js\"|src=\"dist/main.js?v=${deploy_version}\"|" _site/index.html
+          node scripts/version-module-imports.mjs _site/dist "${deploy_version}"
           touch _site/.nojekyll
 
       - name: Upload Pages artifact
