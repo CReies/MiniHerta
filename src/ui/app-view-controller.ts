@@ -9,6 +9,7 @@ import { loadTheme, toggleTheme } from "./theme.js";
 
 export class AppViewController {
   private unsubscribe: (() => void) | null = null;
+  private readonly handleHashChange = (): void => this.syncView();
 
   constructor(
     private readonly els: Elements,
@@ -20,6 +21,8 @@ export class AppViewController {
   start(): void {
     loadTheme(this.els);
     this.bindEvents();
+    window.addEventListener("hashchange", this.handleHashChange);
+    this.syncView();
     this.unsubscribe = this.store.subscribe((state) => this.render(state));
     void this.application.initialize();
   }
@@ -27,6 +30,7 @@ export class AppViewController {
   stop(): void {
     this.unsubscribe?.();
     this.unsubscribe = null;
+    window.removeEventListener("hashchange", this.handleHashChange);
   }
 
   private bindEvents(): void {
@@ -69,6 +73,21 @@ export class AppViewController {
   private exportInventory(): void {
     const filename = `herta-inventario-${new Date().toISOString().slice(0, 10)}.json`;
     this.files.download(filename, this.application.exportInventory());
+  }
+
+  private syncView(): void {
+    const view = window.location.hash === "#inventario" ? "inventario" : "team-finder";
+
+    for (const page of this.els.viewPages) {
+      page.hidden = page.dataset.view !== view;
+    }
+
+    for (const link of this.els.viewLinks) {
+      const active = link.dataset.viewLink === view;
+      link.classList.toggle("is-active", active);
+      if (active) link.setAttribute("aria-current", "page");
+      else link.removeAttribute("aria-current");
+    }
   }
 
   private render(state: AppState): void {

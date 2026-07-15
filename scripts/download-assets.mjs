@@ -6,8 +6,25 @@ const root = fileURLToPath(new URL("../", import.meta.url));
 const force = process.argv.includes("--force");
 const concurrency = Number(process.env.HERTA_ASSET_CONCURRENCY || 6);
 const sourceFile = join(root, "scrapped.json");
+const starRailResBase = "https://raw.githubusercontent.com/Mar-7th/StarRailRes/master";
 
-const rawRuns = JSON.parse(await readFile(sourceFile, "utf8"));
+const rawPayload = JSON.parse(await readFile(sourceFile, "utf8"));
+const rawRuns = Array.isArray(rawPayload) ? rawPayload : rawPayload.items;
+const sourceIndexes = await loadSourceIndexes();
+const sourceNameAliases = {
+  character: {},
+  lightCone: {
+    "Dance Dance Dance": "Dance! Dance! Dance!",
+  },
+};
+const sourceIdAliases = {
+  character: {
+    "Trailblazer (Harmony)": "8005",
+    "Trailblazer (Remembrance)": "8007",
+    "Trailblazer (Elation)": "8009",
+  },
+  lightCone: {},
+};
 const assets = [
   ...collectItems("character", "characters", "px_char", "p{slot}_char"),
   ...collectItems("lightCone", "lightcones", "px_lc", "p{slot}_lc"),
@@ -39,7 +56,7 @@ function collectItems(kind, folder, remoteFolder, keyTemplate) {
   const names = new Set();
 
   for (const run of rawRuns) {
-    const data = run?.data || {};
+    const data = run?.data || run || {};
     for (const slot of [1, 2, 3, 4]) {
       const name = data[keyTemplate.replace("{slot}", slot)];
       if (typeof name === "string" && name.trim()) names.add(name.trim());
@@ -50,9 +67,43 @@ function collectItems(kind, folder, remoteFolder, keyTemplate) {
     kind,
     folder,
     name,
-    url: `https://theherta.com/${remoteFolder}/${encodeURIComponent(name)}.png`,
+    url: sourceAssetUrl(kind, name) || `https://theherta.com/${remoteFolder}/${encodeURIComponent(name)}.png`,
     baseOutput: join(root, "assets", folder, assetBaseName(name)),
   }));
+}
+
+async function loadSourceIndexes() {
+  const [characters, lightCones] = await Promise.all([
+    fetchSourceIndex("characters.json"),
+    fetchSourceIndex("light_cones.json"),
+  ]);
+
+  return {
+    character: createSourceLookup(characters),
+    lightCone: createSourceLookup(lightCones),
+  };
+}
+
+async function fetchSourceIndex(filename) {
+  const response = await fetch(`${starRailResBase}/index_new/en/${filename}`);
+  if (!response.ok) throw new Error(`No se pudo cargar ${filename}: ${response.status}`);
+  return response.json();
+}
+
+function createSourceLookup(index) {
+  return {
+    byId: index,
+    byName: new Map(Object.values(index).map((item) => [item.name, item])),
+  };
+}
+
+function sourceAssetUrl(kind, name) {
+  const lookup = sourceIndexes[kind];
+  const sourceId = sourceIdAliases[kind][name];
+  const sourceName = sourceNameAliases[kind][name] || name;
+  const item = (sourceId && lookup.byId[sourceId]) || lookup.byName.get(sourceName);
+  const path = item?.preview || item?.icon;
+  return path ? `${starRailResBase}/${path}` : "";
 }
 
 async function downloadAsset(asset) {
@@ -131,17 +182,23 @@ async function removeAlternateFormats(asset, activeExtension) {
 
 async function writeAssetManifest() {
   const output = join(root, "src", "generated", "assets.ts");
+  const characters = sortRecord(manifest.character);
+  const lightCones = sortRecord(manifest.lightCone);
   await mkdir(dirname(output), { recursive: true });
   await writeFile(
     output,
     [
-      `export const characterAssets: Record<string, string> = ${JSON.stringify(manifest.character, null, 2)};`,
+      `export const characterAssets: Record<string, string> = ${JSON.stringify(characters, null, 2)};`,
       "",
-      `export const lightConeAssets: Record<string, string> = ${JSON.stringify(manifest.lightCone, null, 2)};`,
+      `export const lightConeAssets: Record<string, string> = ${JSON.stringify(lightCones, null, 2)};`,
       "",
     ].join("\n"),
     "utf8"
   );
+}
+
+function sortRecord(record) {
+  return Object.fromEntries(Object.entries(record).sort(([left], [right]) => left.localeCompare(right, "en")));
 }
 
 function assetBaseName(name) {

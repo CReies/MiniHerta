@@ -68,7 +68,7 @@ function renderRunCard(run: EvaluatedRun, catalog: ItemCatalog): string {
             <span>${svgIcon("shield")}${escapeHtml(run.boss)}</span>
             <span>${svgIcon("user")}${escapeHtml(run.author)}</span>
             <span>${svgIcon("calendar")}${formatDate(run.videoDate)}</span>
-            <span>${svgIcon("star")}${run.limitedCost} limited 5★</span>
+            <span class="run-cost">${svgIcon("star")}<strong>${run.limitedCost}</strong> cost</span>
           </div>
         </div>
         <span class="badge ${status === "possible" ? "" : status}">${statusIcon(status)}${escapeHtml(statusLabel(status, run))}</span>

@@ -20,6 +20,8 @@ export interface Elements {
   characterCount: HTMLElement;
   lightConeCount: HTMLElement;
   rowTemplate: HTMLTemplateElement;
+  viewPages: HTMLElement[];
+  viewLinks: HTMLAnchorElement[];
 }
 
 const ids = [
@@ -48,6 +50,8 @@ export function getElements(): Elements {
   return {
     ...Object.fromEntries(entries),
     rowTemplate: requireElement("inventoryRowTemplate") as HTMLTemplateElement,
+    viewPages: Array.from(document.querySelectorAll<HTMLElement>("[data-view]")),
+    viewLinks: Array.from(document.querySelectorAll<HTMLAnchorElement>("[data-view-link]")),
   } as Elements;
 }
 

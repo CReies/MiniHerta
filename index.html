@@ -30,6 +30,21 @@
           <small>Honkai: Star Rail</small>
         </span>
       </div>
+      <nav class="view-nav" aria-label="Vistas principales">
+        <a class="view-nav__link" href="#team-finder" data-view-link="team-finder">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 6h16M4 12h16M4 18h10" />
+          </svg>
+          Team Finder
+        </a>
+        <a class="view-nav__link" href="#inventario" data-view-link="inventario">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5v-9Z" />
+            <path d="m4.5 7.5 7.5 4.2 7.5-4.2M12 12v9" />
+          </svg>
+          Inventario
+        </a>
+      </nav>
       <div class="top-actions">
         <label class="button button--secondary import-button">
           <input id="jsonFile" type="file" accept="application/json" />
@@ -54,59 +69,17 @@
       </div>
     </header>
 
-    <section class="hero" aria-labelledby="pageTitle">
-      <div class="hero-copy">
-        <p class="eyebrow">
-          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="m12 3 1.45 4.55L18 9l-4.55 1.45L12 15l-1.45-4.55L6 9l4.55-1.45L12 3Z" />
-            <path d="m19 15 .7 2.3L22 18l-2.3.7L19 21l-.7-2.3L16 18l2.3-.7L19 15Z" />
-          </svg>
-          Analizador de equipos
-        </p>
-        <h1 id="pageTitle">Tu próximo <span>0-cycle</span> empieza aquí.</h1>
-        <p class="hero-description">
-          Cruza cada run con tu inventario y descubre, de un vistazo, qué equipos ya puedes jugar y cuáles están más
-          cerca.
-        </p>
-        <div class="hero-actions">
-          <label class="button button--primary import-button">
-            <input id="inventoryFile" type="file" accept="application/json" />
-            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5" />
-              <path d="M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" />
-            </svg>
-            Importar inventario
-          </label>
-          <button id="exportInventory" class="button button--secondary" type="button">
-            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M12 4v12m0 0 4.5-4.5M12 16l-4.5-4.5" />
-              <path d="M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" />
-            </svg>
-            Exportar
-          </button>
-          <button id="resetBuild" class="button button--ghost" type="button">
-            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M4 12a8 8 0 1 0 2.35-5.65L4 8.7" />
-              <path d="M4 4v4.7h4.7" />
-            </svg>
-            Reiniciar
-          </button>
-        </div>
-      </div>
-      <div class="hero-gallery" aria-hidden="true">
-        <div class="hero-orbit"></div>
-        <figure class="hero-portrait hero-portrait--left"><img src="assets/characters/anaxa.webp" alt="" /></figure>
-        <figure class="hero-portrait hero-portrait--main"><img src="assets/characters/the-herta.webp" alt="" /></figure>
-        <figure class="hero-portrait hero-portrait--right">
-          <img src="assets/characters/castorice.webp" alt="" />
-        </figure>
-        <span class="hero-spark hero-spark--one">✦</span>
-        <span class="hero-spark hero-spark--two">✦</span>
-      </div>
+    <section class="hero" aria-label="Boss destacado">
+      <img
+        class="hero-boss"
+        src="assets/bosses/murata-graphia-banner.png"
+        alt="Murata Graphia, Founding Artist"
+      />
     </section>
 
-    <main class="layout">
-      <aside class="panel inventory-panel">
+    <main class="view-stage">
+      <section id="inventoryView" class="view-page" data-view="inventario" aria-labelledby="inventoryHeading" hidden>
+        <div class="panel inventory-panel inventory-panel--standalone">
         <div class="inventory-header">
           <span class="section-icon" aria-hidden="true">
             <svg class="icon" viewBox="0 0 24 24">
@@ -116,7 +89,31 @@
           </span>
           <div>
             <p class="eyebrow">Tu colección</p>
-            <h2>Inventario</h2>
+            <h2 id="inventoryHeading">Inventario</h2>
+          </div>
+          <div class="inventory-actions">
+            <label class="button button--primary import-button">
+              <input id="inventoryFile" type="file" accept="application/json" />
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5" />
+                <path d="M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" />
+              </svg>
+              Importar
+            </label>
+            <button id="exportInventory" class="button button--secondary" type="button">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 4v12m0 0 4.5-4.5M12 16l-4.5-4.5" />
+                <path d="M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" />
+              </svg>
+              Exportar
+            </button>
+            <button id="resetBuild" class="button button--ghost" type="button">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 12a8 8 0 1 0 2.35-5.65L4 8.7" />
+                <path d="M4 4v4.7h4.7" />
+              </svg>
+              Reiniciar
+            </button>
           </div>
         </div>
 
@@ -155,9 +152,11 @@
           </div>
           <div id="lightCones" class="inventory-list"></div>
         </section>
-      </aside>
+        </div>
+      </section>
 
-      <section class="results-panel">
+      <section id="teamFinderView" class="view-page" data-view="team-finder" aria-labelledby="resultsHeading">
+        <div class="results-panel">
         <section class="filters panel" aria-labelledby="resultsHeading">
           <div class="filters-intro">
             <div>
@@ -245,6 +244,7 @@
         </div>
 
         <div id="results" class="results" aria-live="polite"></div>
+        </div>
       </section>
     </main>
 
