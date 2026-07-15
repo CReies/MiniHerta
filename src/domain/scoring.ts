@@ -75,7 +75,7 @@ function evaluateMember(
 
     if (ownedSuperimp === undefined) {
       missing.push(buildMissingItem("lightCone", member.lc, lightConeRarity, member.superimp, null));
-    } else if (lcMode === "strict" && ownedSuperimp < member.superimp) {
+    } else if (lcMode === "strict" && !meetsLevelRequirement(ownedSuperimp, member.superimp)) {
       missing.push(buildMissingItem("lightCone", member.lc, lightConeRarity, member.superimp, ownedSuperimp));
     }
   }
@@ -91,11 +91,16 @@ function buildMissingItem(
   owned: number | null
 ): MissingItem {
   const isUpgrade = owned !== null;
-  const unitsNeeded = owned === null ? 1 : Math.max(required - owned, 1);
-  const unitScore = scoreTable[kind][rarity][isUpgrade ? "upgrade" : "new"];
-  const score = unitScore * unitsNeeded;
+  const initialLevel = kind === "character" ? 0 : 1;
+  const score = isUpgrade
+    ? scoreTable[kind][rarity].upgrade * Math.max(required - owned, 1)
+    : scoreTable[kind][rarity].new + scoreTable[kind][rarity].upgrade * Math.max(required - initialLevel, 0);
   const prefix = kind === "character" ? "E" : "S";
-  const label = owned === null ? name : `${name} ${prefix}${required}`;
+  const label = owned === null && required === initialLevel ? name : `${name} ${prefix}${required}`;
 
   return { kind, name, required, owned, rarity, isUpgrade, score, label };
+}
+
+function meetsLevelRequirement(owned: number, required: number): boolean {
+  return owned >= required;
 }
