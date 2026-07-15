@@ -95,7 +95,7 @@ export class AppViewController {
 
   private render(state: AppState): void {
     renderBossOptions(this.els, state.runs, state.filters.boss);
-    renderInventory(this.els, state.inventory, state.catalog, state.inventorySearch, (kind, item, level) =>
+    renderInventory(this.els, state.inventory, state.catalog, state.runs, state.inventorySearch, (kind, item, level) =>
       this.application.updateInventoryItem(kind, item, level)
     );
     const { evaluated, visible } = selectResults(state);

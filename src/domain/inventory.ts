@@ -1,4 +1,4 @@
-import type { Inventory, SerializedInventory } from "./types.js";
+import type { Inventory, ItemKind, SerializedInventory } from "./types.js";
 
 export const inventoryStorageKey = "herta-0cycle-inventory-v1";
 
@@ -7,6 +7,18 @@ export function createEmptyInventory(): Inventory {
     characters: new Map(),
     lightCones: new Map(),
   };
+}
+
+export function inventoryLevelBounds(kind: ItemKind): { min: number; max: number } {
+  return kind === "character" ? { min: 0, max: 6 } : { min: 1, max: 5 };
+}
+
+export function stepInventoryLevel(kind: ItemKind, current: number | undefined, direction: -1 | 1): number | null {
+  const { min, max } = inventoryLevelBounds(kind);
+  if (current === undefined) return direction === 1 ? min : null;
+  const next = current + direction;
+  if (next < min) return null;
+  return Math.min(next, max);
 }
 
 export function serializeInventory(inventory: Inventory): SerializedInventory {

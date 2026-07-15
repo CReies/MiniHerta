@@ -19,7 +19,8 @@ export interface Elements {
   results: HTMLElement;
   characterCount: HTMLElement;
   lightConeCount: HTMLElement;
-  rowTemplate: HTMLTemplateElement;
+  characterCardTemplate: HTMLTemplateElement;
+  lightConeCardTemplate: HTMLTemplateElement;
   viewPages: HTMLElement[];
   viewLinks: HTMLAnchorElement[];
 }
@@ -49,7 +50,8 @@ export function getElements(): Elements {
   const entries = ids.map((id) => [id, requireElement(id)]);
   return {
     ...Object.fromEntries(entries),
-    rowTemplate: requireElement("inventoryRowTemplate") as HTMLTemplateElement,
+    characterCardTemplate: requireElement("characterCardTemplate") as HTMLTemplateElement,
+    lightConeCardTemplate: requireElement("lightConeCardTemplate") as HTMLTemplateElement,
     viewPages: Array.from(document.querySelectorAll<HTMLElement>("[data-view]")),
     viewLinks: Array.from(document.querySelectorAll<HTMLAnchorElement>("[data-view-link]")),
   } as Elements;

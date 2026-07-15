@@ -107,6 +107,10 @@ Al exportar:
 - Se descarga un JSON `herta-inventario-YYYY-MM-DD.json`.
 - El JSON usa `characters` y `lightCones`.
 
+## Conos Recomendados en el Inventario
+
+La tarjeta de cada personaje muestra sus tres light cones más usados en las runs 0-cycle cargadas. El ranking se calcula por cantidad de apariciones y desempata por nombre para mantener un orden estable. Los conos que no forman parte del top 3 de ningún personaje se muestran aparte en “Otros light cones”.
+
 ## Conteos Actuales Esperados
 
 Con los archivos actuales de `banner-data/`:
