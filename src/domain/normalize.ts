@@ -5,7 +5,7 @@ export function normalizeRuns(rawRuns: RawRun[]): Run[] {
 }
 
 function normalizeRun(raw: RawRun): Run {
-  const data = raw.data || {};
+  const data = raw.data || raw;
   const team: TeamMember[] = [1, 2, 3, 4].map((slot) => ({
     slot,
     char: stringValue(data[`p${slot}_char`], "Unknown"),

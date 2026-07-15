@@ -10,6 +10,13 @@ export interface RawRun {
   boss_name?: string;
   created_at?: string;
   data?: Record<string, unknown>;
+
+  [key: string]: unknown;
+}
+
+export interface RawRunCollection {
+  items: RawRun[];
+  count?: number;
 }
 
 export interface TeamMember {

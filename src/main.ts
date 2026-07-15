@@ -7,7 +7,9 @@ import { getElements, getFilters } from "./ui/dom.js";
 import { loadTheme, toggleTheme } from "./ui/theme.js";
 import { selectResults } from "./app/results.js";
 import { renderBossOptions, renderInventory, renderResults } from "./ui/render.js";
-import type { RawRun, SerializedInventory } from "./domain/types.js";
+import type { RawRun, RawRunCollection, SerializedInventory } from "./domain/types.js";
+
+type RawRunsPayload = RawRun[] | RawRunCollection;
 
 const els = getElements();
 const state = createAppState();
@@ -40,12 +42,14 @@ function bindEvents(): void {
 
 async function loadRuns(): Promise<void> {
   const hasLocalRuns = await loadLocalRuns();
-  void loadRemoteRuns(hasLocalRuns);
+  if (!hasLocalRuns) {
+    void loadRemoteRuns(false);
+  }
 }
 
 async function loadLocalRuns(): Promise<boolean> {
   try {
-    replaceRuns(await fetchJson<RawRun[]>("scrapped.json"));
+    replaceRunsPayload(await fetchJson<RawRunsPayload>("scrapped.json"));
     return true;
   } catch {
     els.results.innerHTML = `<div class="empty">Descargando runs...</div>`;
@@ -64,11 +68,15 @@ async function loadRemoteRuns(hasFallback: boolean): Promise<void> {
 }
 
 function handleRunImport(event: Event): void {
-  readJsonFile<RawRun[]>(
+  readJsonFile<RawRunsPayload>(
     event,
-    replaceRuns,
+    replaceRunsPayload,
     () => (els.results.innerHTML = `<div class="empty">Ese archivo no parece ser un JSON válido de runs.</div>`)
   );
+}
+
+function replaceRunsPayload(payload: RawRunsPayload): void {
+  replaceRuns(Array.isArray(payload) ? payload : payload.items);
 }
 
 function handleInventoryImport(event: Event): void {
