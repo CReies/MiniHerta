@@ -23,7 +23,8 @@ export interface AppState {
 export type StateListener = (state: AppState) => void;
 
 const defaultFilters: FilterState = {
-  boss: "Todos",
+  endgame: "Todos",
+  version: "",
   resultMode: "all",
   lcMode: "strict",
   resultSearch: "",
@@ -62,13 +63,17 @@ export class AppStore {
     const inventory = cloneInventory(this.state.inventory);
     const names = catalogNames(catalog);
     reconcileInventory(inventory, names.characters, names.lightCones);
-    const availableBosses = new Set(runs.map((run) => run.boss));
-    const boss =
-      this.state.filters.boss === "Todos" || availableBosses.has(this.state.filters.boss)
-        ? this.state.filters.boss
+    const availableEndgames = new Set(runs.map((run) => run.endgame));
+    const availableVersions = new Set(runs.map((run) => run.version));
+    const endgame =
+      this.state.filters.endgame === "Todos" || availableEndgames.has(this.state.filters.endgame)
+        ? this.state.filters.endgame
         : "Todos";
+    const version = availableVersions.has(this.state.filters.version)
+      ? this.state.filters.version
+      : latestVersion(availableVersions);
 
-    this.commit({ ...this.state, runs, catalog, inventory, filters: { ...this.state.filters, boss } });
+    this.commit({ ...this.state, runs, catalog, inventory, filters: { ...this.state.filters, endgame, version } });
   }
 
   replaceInventory(inventory: Inventory): void {
@@ -106,6 +111,23 @@ export class AppStore {
     this.state = nextState;
     for (const listener of this.listeners) listener(this.state);
   }
+}
+
+function latestVersion(versions: Set<string>): string {
+  return [...versions].sort(compareVersions).at(-1) ?? "";
+}
+
+function compareVersions(a: string, b: string): number {
+  const aParts = a.split(".").map(Number);
+  const bParts = b.split(".").map(Number);
+  const length = Math.max(aParts.length, bParts.length);
+
+  for (let index = 0; index < length; index += 1) {
+    const difference = (aParts[index] ?? 0) - (bParts[index] ?? 0);
+    if (Number.isFinite(difference) && difference !== 0) return difference;
+  }
+
+  return a.localeCompare(b, undefined, { numeric: true });
 }
 
 function cloneInventory(inventory: Inventory): Inventory {

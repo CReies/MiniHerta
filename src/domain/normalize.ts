@@ -18,6 +18,8 @@ function normalizeRun(raw: RawRun): Run {
     id: stringValue(raw.id, "sin-id"),
     author: stringValue(data.author_name, stringValue(raw.author_name, "Unknown")),
     boss: stringValue(data.boss_name, stringValue(raw.boss_name, "Unknown")),
+    endgame: stringValue(data.mode, stringValue(raw.mode, "Unknown")),
+    version: stringValue(data.season, stringValue(raw.season, "Unknown")),
     videoUrl: stringValue(data.video_url, ""),
     videoDate: stringValue(data.video_date, stringValue(raw.created_at, "")),
     subcategory: stringValue(data.subcategory, ""),

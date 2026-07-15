@@ -11,6 +11,8 @@ function makeRawRun(id = "run-1") {
     data: {
       author_name: "Test",
       boss_name: "Boss",
+      season: id === "run-43" ? "4.3" : "4.4",
+      mode: "Anomaly Arbitration",
       subcategory: "0-Cycle",
       metric_value: 0,
       p1_char: "Acheron",
@@ -41,6 +43,15 @@ test("the result list defaults to every run ordered by the least missing investm
 
   assert.equal(store.snapshot.filters.resultMode, "all");
   assert.equal(store.snapshot.filters.sortMode, "missing");
+});
+
+test("the run filters default to the latest available version", () => {
+  const store = new AppStore();
+
+  store.replaceRuns([makeRawRun("run-43"), makeRawRun("run-44")]);
+
+  assert.equal(store.snapshot.filters.endgame, "Todos");
+  assert.equal(store.snapshot.filters.version, "4.4");
 });
 
 test("the application falls back to the next run repository", async () => {

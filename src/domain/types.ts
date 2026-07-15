@@ -8,6 +8,8 @@ export interface RawRun {
   id?: string;
   author_name?: string;
   boss_name?: string;
+  season?: string;
+  mode?: string;
   created_at?: string;
   data?: Record<string, unknown>;
 
@@ -31,6 +33,8 @@ export interface Run {
   id: string;
   author: string;
   boss: string;
+  endgame: string;
+  version: string;
   videoUrl: string;
   videoDate: string;
   subcategory: string;
@@ -72,7 +76,8 @@ export interface EvaluatedRun extends Run {
 }
 
 export interface FilterState {
-  boss: string;
+  endgame: string;
+  version: string;
   resultMode: ResultMode;
   lcMode: LcMode;
   resultSearch: string;

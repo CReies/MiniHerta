@@ -1,6 +1,7 @@
 import { mkdir, readFile, readdir, stat, unlink, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
+import sharp from "sharp";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const force = process.argv.includes("--force");
@@ -143,8 +144,8 @@ async function downloadAsset(asset) {
     return;
   }
 
-  const buffer = Buffer.from(await response.arrayBuffer());
-  const extension = detectImageExtension(buffer, response.headers.get("content-type"));
+  const buffer = await optimizeAsset(Buffer.from(await response.arrayBuffer()), asset.kind);
+  const extension = "webp";
   const output = `${asset.baseOutput}.${extension}`;
   await writeFile(output, buffer);
   await removeAlternateFormats(asset, extension);
@@ -172,13 +173,12 @@ async function findExistingAsset(asset) {
   return null;
 }
 
-function detectImageExtension(buffer, contentType) {
-  if (buffer[0] === 0x89 && buffer[1] === 0x50 && buffer[2] === 0x4e && buffer[3] === 0x47) return "png";
-  if (buffer.toString("ascii", 0, 4) === "RIFF" && buffer.toString("ascii", 8, 12) === "WEBP") return "webp";
-  if (buffer.toString("ascii", 4, 12).includes("ftypavif")) return "avif";
-  if (contentType?.includes("webp")) return "webp";
-  if (contentType?.includes("avif")) return "avif";
-  return "png";
+async function optimizeAsset(buffer, kind) {
+  const width = kind === "character" ? 340 : 120;
+  return sharp(buffer)
+    .resize({ width, withoutEnlargement: true })
+    .webp({ quality: 82, effort: 5, smartSubsample: true })
+    .toBuffer();
 }
 
 async function removeAlternateFormats(asset, activeExtension) {

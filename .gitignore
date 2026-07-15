@@ -32,3 +32,6 @@ Thumbs.db
 
 # Generated data
 scrapped/index.json
+
+# Lighthouse reports
+reports/

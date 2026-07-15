@@ -22,14 +22,17 @@ export function renderResults(
   els: Elements,
   evaluated: EvaluatedRun[],
   visible: EvaluatedRun[],
-  catalog: ItemCatalog
+  catalog: ItemCatalog,
+  limit = 24,
+  onShowMore?: () => void
 ): void {
   const counts = resultCounts(evaluated);
 
   els.possibleCount.textContent = String(counts.possible);
   els.nearCount.textContent = String(counts.near);
   els.runCount.textContent = String(evaluated.length);
-  els.results.innerHTML = renderVisibleRuns(visible, catalog);
+  els.results.innerHTML = renderVisibleRuns(visible, catalog, limit);
+  els.results.querySelector<HTMLButtonElement>("[data-show-more]")?.addEventListener("click", () => onShowMore?.());
 }
 
 function resultCounts(runs: EvaluatedRun[]): { possible: number; near: number } {
@@ -39,7 +42,7 @@ function resultCounts(runs: EvaluatedRun[]): { possible: number; near: number } 
   };
 }
 
-function renderVisibleRuns(runs: EvaluatedRun[], catalog: ItemCatalog): string {
+function renderVisibleRuns(runs: EvaluatedRun[], catalog: ItemCatalog, limit: number): string {
   if (!runs.length) {
     return `
       <div class="empty">
@@ -50,10 +53,20 @@ function renderVisibleRuns(runs: EvaluatedRun[], catalog: ItemCatalog): string {
     `;
   }
 
-  return runs
-    .slice(0, 160)
+  const rendered = runs
+    .slice(0, limit)
     .map((run) => renderRunCard(run, catalog))
     .join("");
+  const remaining = runs.length - limit;
+  if (remaining <= 0) return rendered;
+
+  return `${rendered}
+    <div class="results-more">
+      <p>Mostrando ${Math.min(limit, runs.length)} de ${runs.length} equipos</p>
+      <button class="button button--secondary" type="button" data-show-more>
+        Mostrar ${Math.min(24, remaining)} más
+      </button>
+    </div>`;
 }
 
 function renderRunCard(run: EvaluatedRun, catalog: ItemCatalog): string {

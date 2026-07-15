@@ -30,13 +30,16 @@ export function evaluateRun(
 }
 
 export function matchesFilters(run: EvaluatedRun, filters: FilterState): boolean {
-  if (filters.boss && filters.boss !== "Todos" && run.boss !== filters.boss) return false;
+  if (filters.endgame && filters.endgame !== "Todos" && run.endgame !== filters.endgame) return false;
+  if (filters.version && run.version !== filters.version) return false;
 
   const query = normalizeText(filters.resultSearch);
   if (!query) return true;
 
   const haystack = normalizeText(
-    [run.author, run.boss, ...run.team.flatMap((member) => [member.char, member.lc])].join(" ")
+    [run.author, run.boss, run.endgame, run.version, ...run.team.flatMap((member) => [member.char, member.lc])].join(
+      " "
+    )
   );
   return haystack.includes(query);
 }

@@ -10,7 +10,8 @@ export interface Elements {
   lightConeSearch: HTMLInputElement;
   characters: HTMLElement;
   lightCones: HTMLElement;
-  bossFilter: HTMLSelectElement;
+  endgameFilter: HTMLSelectElement;
+  versionFilter: HTMLSelectElement;
   lcMode: HTMLSelectElement;
   resultSearch: HTMLInputElement;
   possibleCount: HTMLElement;
@@ -35,7 +36,8 @@ const ids = [
   "lightConeSearch",
   "characters",
   "lightCones",
-  "bossFilter",
+  "endgameFilter",
+  "versionFilter",
   "lcMode",
   "resultSearch",
   "possibleCount",
@@ -59,7 +61,8 @@ export function getElements(): Elements {
 
 export function getFilters(els: Elements): Partial<FilterState> {
   return {
-    boss: els.bossFilter.value,
+    endgame: els.endgameFilter.value,
+    version: els.versionFilter.value,
     lcMode: els.lcMode.value as LcMode,
     resultSearch: els.resultSearch.value,
   };

@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#0e0d16" />
     <meta name="color-scheme" content="dark light" />
+    <meta
+      name="description"
+      content="Encuentra equipos de 0 ciclos de Honkai: Star Rail compatibles con tus personajes y light cones."
+    />
     <title>0-Cycle Team Finder</title>
     <script>
       try {
@@ -14,6 +18,14 @@
         document.documentElement.dataset.theme = "dark";
       }
     </script>
+    <link
+      rel="preload"
+      as="image"
+      href="assets/bosses/murata-graphia-banner-800.webp"
+      imagesrcset="assets/bosses/murata-graphia-banner-800.webp 800w, assets/bosses/murata-graphia-banner.webp 1600w"
+      imagesizes="(max-width: 800px) calc(100vw - 24px), min(calc(100vw - 48px), 1480px)"
+      type="image/webp"
+    />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
@@ -70,7 +82,17 @@
     </header>
 
     <section class="hero" aria-label="Boss destacado">
-      <img class="hero-boss" src="assets/bosses/murata-graphia-banner.png" alt="Murata Graphia, Founding Artist" />
+      <img
+        class="hero-boss"
+        src="assets/bosses/murata-graphia-banner.webp"
+        srcset="assets/bosses/murata-graphia-banner-800.webp 800w, assets/bosses/murata-graphia-banner.webp 1600w"
+        sizes="(max-width: 800px) calc(100vw - 24px), min(calc(100vw - 48px), 1480px)"
+        width="1600"
+        height="466"
+        fetchpriority="high"
+        decoding="async"
+        alt="Murata Graphia, Founding Artist"
+      />
     </section>
 
     <main class="view-stage">
@@ -174,10 +196,24 @@
                     <path d="M12 3 5 6v5c0 4.6 2.9 8.1 7 10 4.1-1.9 7-5.4 7-10V6l-7-3Z" />
                     <path d="m9 12 2 2 4-4" />
                   </svg>
-                  Boss
+                  Endgame
                 </span>
                 <span class="select-box">
-                  <select id="bossFilter"></select>
+                  <select id="endgameFilter"></select>
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 10 4 4 4-4" /></svg>
+                </span>
+              </label>
+              <label class="field-label">
+                <span class="field-title">
+                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+                    <path
+                      d="M7 3v3M17 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z"
+                    />
+                  </svg>
+                  Versión
+                </span>
+                <span class="select-box">
+                  <select id="versionFilter"></select>
                   <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 10 4 4 4-4" /></svg>
                 </span>
               </label>

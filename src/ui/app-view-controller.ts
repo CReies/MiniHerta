@@ -4,12 +4,16 @@ import type { AppState, AppStore } from "../app/state.js";
 import type { BrowserJsonFileGateway } from "../infrastructure/browser/json-file-gateway.js";
 import type { SerializedInventory } from "../domain/types.js";
 import { getFilters, type Elements } from "./dom.js";
-import { renderBossOptions, renderInventory, renderResults } from "./render.js";
+import { renderInventory, renderResults, renderRunFilterOptions } from "./render.js";
 import { loadTheme, toggleTheme } from "./theme.js";
 
 export class AppViewController {
   private unsubscribe: (() => void) | null = null;
-  private readonly handleHashChange = (): void => this.syncView();
+  private resultLimit = 24;
+  private readonly handleHashChange = (): void => {
+    this.syncView();
+    this.render(this.store.snapshot);
+  };
 
   constructor(
     private readonly els: Elements,
@@ -47,8 +51,11 @@ export class AppViewController {
       this.application.updateInventorySearch("lightCone", this.els.lightConeSearch.value)
     );
 
-    for (const element of [this.els.bossFilter, this.els.lcMode, this.els.resultSearch]) {
-      element.addEventListener("input", () => this.application.updateFilters(getFilters(this.els)));
+    for (const element of [this.els.endgameFilter, this.els.versionFilter, this.els.lcMode, this.els.resultSearch]) {
+      element.addEventListener("input", () => {
+        this.resultLimit = 24;
+        this.application.updateFilters(getFilters(this.els));
+      });
     }
   }
 
@@ -94,12 +101,28 @@ export class AppViewController {
   }
 
   private render(state: AppState): void {
-    renderBossOptions(this.els, state.runs, state.filters.boss);
-    renderInventory(this.els, state.inventory, state.catalog, state.runs, state.inventorySearch, (kind, item, level) =>
-      this.application.updateInventoryItem(kind, item, level)
-    );
-    const { evaluated, visible } = selectResults(state);
-    renderResults(this.els, evaluated, visible, state.catalog);
+    const inventoryView = window.location.hash === "#inventario";
+
+    if (inventoryView) {
+      this.els.results.replaceChildren();
+      renderInventory(
+        this.els,
+        state.inventory,
+        state.catalog,
+        state.runs,
+        state.inventorySearch,
+        (kind, item, level) => this.application.updateInventoryItem(kind, item, level)
+      );
+    } else {
+      this.els.characters.replaceChildren();
+      this.els.lightCones.replaceChildren();
+      renderRunFilterOptions(this.els, state.runs, state.filters.endgame, state.filters.version);
+      const { evaluated, visible } = selectResults(state);
+      renderResults(this.els, evaluated, visible, state.catalog, this.resultLimit, () => {
+        this.resultLimit += 24;
+        this.render(this.store.snapshot);
+      });
+    }
 
     if ((state.status === "error" || state.runs.length === 0) && state.statusMessage) {
       this.els.results.replaceChildren(createMessage(state.statusMessage));
