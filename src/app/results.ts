@@ -7,7 +7,7 @@ export interface ResultSelection {
   visible: EvaluatedRun[];
 }
 
-export function selectResults(state: AppState, filters: FilterState): ResultSelection {
+export function selectResults(state: AppState, filters: FilterState = state.filters): ResultSelection {
   const evaluated = state.runs
     .map((run) => evaluateRun(run, state.inventory, filters.lcMode, state.catalog))
     .filter((run) => matchesFilters(run, filters));

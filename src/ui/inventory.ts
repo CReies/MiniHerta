@@ -3,6 +3,8 @@ import type { Elements } from "./dom.js";
 import type { Inventory, ItemKind } from "../domain/types.js";
 import { normalizeText } from "../utils/text.js";
 
+export type InventoryItemChange = (kind: ItemKind, item: string, level: number | null) => void;
+
 interface InventoryListOptions {
   root: HTMLElement;
   items: string[];
@@ -14,24 +16,31 @@ interface InventoryListOptions {
   kind: ItemKind;
   catalog: ItemCatalog;
   template: HTMLTemplateElement;
-  onChange: () => void;
+  onChange: InventoryItemChange;
 }
 
-export function renderInventory(els: Elements, inventory: Inventory, catalog: ItemCatalog, onChange: () => void): void {
-  renderInventoryList(characterListOptions(els, inventory, catalog, onChange));
-  renderInventoryList(lightConeListOptions(els, inventory, catalog, onChange));
+export function renderInventory(
+  els: Elements,
+  inventory: Inventory,
+  catalog: ItemCatalog,
+  search: { character: string; lightCone: string },
+  onChange: InventoryItemChange
+): void {
+  renderInventoryList(characterListOptions(els, inventory, catalog, search.character, onChange));
+  renderInventoryList(lightConeListOptions(els, inventory, catalog, search.lightCone, onChange));
 }
 
 function characterListOptions(
   els: Elements,
   inventory: Inventory,
   catalog: ItemCatalog,
-  onChange: () => void
+  search: string,
+  onChange: InventoryItemChange
 ): InventoryListOptions {
   return {
     root: els.characters,
     items: catalog.characters.map((item) => item.name),
-    search: els.characterSearch.value,
+    search,
     owned: inventory.characters,
     label: "E",
     max: 6,
@@ -47,12 +56,13 @@ function lightConeListOptions(
   els: Elements,
   inventory: Inventory,
   catalog: ItemCatalog,
-  onChange: () => void
+  search: string,
+  onChange: InventoryItemChange
 ): InventoryListOptions {
   return {
     root: els.lightCones,
     items: catalog.lightCones.map((item) => item.name),
-    search: els.lightConeSearch.value,
+    search,
     owned: inventory.lightCones,
     label: "S",
     max: 5,
@@ -131,20 +141,14 @@ function bindInventoryRowEvents(
   options: InventoryListOptions
 ): void {
   checkbox.addEventListener("change", () => {
-    updateOwnedItem(checkbox.checked, select.value, item, options.owned);
-    options.onChange();
+    const level = checkbox.checked ? Number(select.value) : null;
+    options.onChange(options.kind, item, level);
   });
 
   select.addEventListener("change", () => {
     if (!checkbox.checked) return;
-    options.owned.set(item, Number(select.value));
-    options.onChange();
+    options.onChange(options.kind, item, Number(select.value));
   });
-}
-
-function updateOwnedItem(isOwned: boolean, level: string, item: string, owned: Map<string, number>): void {
-  if (isOwned) owned.set(item, Number(level));
-  else owned.delete(item);
 }
 
 function levelValues(kind: ItemKind, max: number): number[] {

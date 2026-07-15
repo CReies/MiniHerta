@@ -1,94 +1,62 @@
 # Arquitectura
 
-## Resumen
+## Objetivo
 
-La aplicacion es una SPA estatica con TypeScript modular. No usa backend: carga datos JSON desde archivos locales servidos por HTTP, mantiene estado en memoria y persiste el inventario del usuario en `localStorage`.
-
-Aunque `astro` esta instalado para una migracion futura, la app actual se sirve como HTML/CSS/JS estatico. El build propio usa `node:module.stripTypeScriptTypes` para transformar TypeScript a JavaScript en `dist/`.
-
-## Capas
+La aplicación sigue una arquitectura por capas inspirada en Clean Architecture. Las dependencias apuntan hacia el dominio y los detalles del navegador quedan en el exterior. Esto permite sustituir la persistencia, las fuentes de runs o la interfaz sin reescribir las reglas de scoring.
 
 ```text
-index.html
-styles.css
-src/main.ts
-  app/
-    json-file.ts
-    results.ts
-    state.ts
-  domain/
+UI ────────────────┐
+                   v
+Infraestructura -> Aplicación -> Dominio
+                         |
+                         v
+                  Estado observable
+```
+
+## Estructura
+
+```text
+src/
+  domain/                    Reglas y modelos puros
     catalog.ts
     inventory.ts
     normalize.ts
     scoring.ts
     types.ts
-  ui/
+  app/                       Casos de uso y puertos
+    application.ts
+    ports.ts
+    results.ts
+    state.ts
+  infrastructure/            Adaptadores externos
+    browser/
+      inventory-repository.ts
+      json-file-gateway.ts
+    http/
+      default-run-sources.ts
+      runs-repository.ts
+  ui/                         Presentación DOM
+    app-view-controller.ts
     bosses.ts
     dom.ts
     inventory.ts
     render.ts
     results.ts
     theme.ts
-  utils/
-    text.ts
-dist/
+  main.ts                     Composition root
 ```
-
-`src/main.ts`
-
-- Hace bootstrap de la app.
-- Conecta eventos DOM con acciones de aplicacion.
-- No contiene reglas de dominio, parsing de archivos ni detalles de render.
-
-## Aplicacion
-
-`src/app/state.ts`
-
-- Mantiene la forma del estado runtime.
-- Crea estado inicial, reemplaza runs, reemplaza/reset inventory y reconcilia inventario contra catalogo.
-
-`src/app/results.ts`
-
-- Selecciona resultados visibles desde estado + filtros.
-- Encapsula evaluacion, filtrado por busqueda/modo y ordenamiento.
-
-`src/app/json-file.ts`
-
-- Lee JSON remoto/local.
-- Centraliza importacion desde `<input type="file">`.
-- Centraliza descarga de JSON.
 
 ## Dominio
 
-`src/domain/normalize.ts`
+El dominio contiene funciones puras y no depende de DOM, `localStorage`, `fetch` ni archivos:
 
-- Convierte cada entrada cruda de `scrapped.json` en `Run`.
-- Filtra runs `0-Cycle` o con `metric_value = 0`.
-- Normaliza nombres, boss, autor, video, eidolons y superimposiciones.
+- `normalize.ts` transforma entradas externas en entidades `Run`.
+- `catalog.ts` construye el catálogo y resuelve rareza y assets.
+- `inventory.ts` crea, valida, reconcilia y serializa inventarios.
+- `scoring.ts` evalúa runs, faltantes, filtros y ordenamiento.
+- `types.ts` define el lenguaje común del negocio.
 
-`src/domain/inventory.ts`
-
-- Define carga, importacion, exportacion y persistencia del inventario.
-- Soporta claves `characters`, `personajes`, `lightCones`, `light_cones` y `conos`.
-- Limita personajes a `E0-E6` y light cones a `S1-S5`.
-
-`src/domain/catalog.ts`
-
-- Construye el catalogo de personajes y light cones a partir de los runs cargados.
-- Centraliza metadatos de items: tipo, nombre canonico, labels localizables, rareza y asset.
-- Usa `src/generated/assets.ts` como manifiesto generado de imagenes disponibles.
-- Todo lo que no esta en las listas 4 estrellas se considera 5 estrellas para scoring.
-
-`src/domain/scoring.ts`
-
-- Evalua cada run contra el inventario.
-- Calcula faltantes y `missingScore`.
-- Aplica filtros, modo de resultado y ordenamiento.
-- Consulta rarezas en el catalogo, no en listas duplicadas.
-
-## Scoring de Cercania
-
-Los equipos cercanos ya no se ordenan por cantidad simple de faltantes, sino por costo estimado:
+El scoring ponderado mantiene estas reglas:
 
 | Falta                                     |         Score |
 | ----------------------------------------- | ------------: |
@@ -97,60 +65,60 @@ Los equipos cercanos ya no se ordenan por cantidad simple de faltantes, sino por
 | Personaje 5 estrellas nuevo               |           100 |
 | Eidolon de personaje 5 estrellas          | 135 por nivel |
 | Light cone 4 estrellas nuevo              |            10 |
-| Superimposicion de light cone 4 estrellas |  16 por nivel |
+| Superimposición de light cone 4 estrellas |  16 por nivel |
 | Light cone 5 estrellas nuevo              |            70 |
-| Superimposicion de light cone 5 estrellas |  90 por nivel |
+| Superimposición de light cone 5 estrellas |  90 por nivel |
 
-Un run es "cercano" si `missingScore <= 220`. Un run es "posible" si `missingScore === 0`.
+Un run es cercano con `missingScore <= 220` y posible con `missingScore === 0`.
 
-Estas reglas reflejan:
+## Aplicación
 
-- Los 4 estrellas son mas faciles de conseguir que 5 estrellas.
-- Un light cone cuesta menos que un personaje.
-- Obtener un item nuevo es mejor que perseguir dupes/eidolons/superimposiciones.
+`HertaApplication` expone los casos de uso de la app:
 
-## UI
+- inicializar las fuentes con fallback ordenado;
+- cargar runs importados;
+- importar, exportar, actualizar y reiniciar inventario;
+- cambiar filtros y búsquedas;
+- persistir después de cada comando relevante.
 
-`src/ui/render.ts`
+La clase depende de los puertos `RunsRepository` e `InventoryRepository`, no de implementaciones concretas. Para añadir una API, IndexedDB o una fuente cacheada solo es necesario implementar el puerto correspondiente y registrarlo en `main.ts`.
 
-- Fachada pequena que reexporta renders especificos.
+## Estado reactivo
 
-`src/ui/bosses.ts`
+`AppStore` es la fuente única de verdad. Cada comando crea un nuevo objeto de estado y emite una notificación a sus suscriptores:
 
-- Renderiza opciones del filtro de boss.
+```text
+evento DOM -> caso de uso -> AppStore.commit -> suscriptores -> render
+```
 
-`src/ui/inventory.ts`
+El inventario se clona antes de actualizar sus `Map`, por lo que una vista o prueba nunca observa mutaciones retroactivas de un estado anterior. El estado reúne runs, catálogo, inventario, filtros, búsquedas y estado de carga/error.
 
-- Renderiza listas de personajes y light cones.
-- Encapsula creacion de filas, imagenes, selects y eventos por item.
+## Infraestructura
 
-`src/ui/results.ts`
+- `LocalStorageInventoryRepository` adapta `localStorage` al puerto de inventario.
+- `HttpRunsRepository` adapta cualquier endpoint JSON al puerto de runs.
+- `createDefaultRunsRepositories` configura el JSON local y la API remota como fallback.
+- `BrowserJsonFileGateway` encapsula lectura y descarga de archivos del navegador.
 
-- Renderiza contadores, cards de runs, miembros y chips de faltantes.
+Los fallos de una fuente de runs no contaminan el caso de uso: la aplicación intenta el siguiente repositorio configurado y solo publica un error cuando todos fallan.
 
-`src/ui/dom.ts`
+## Presentación
 
-- Centraliza el acceso a elementos DOM.
-- Lee filtros actuales desde controles.
+`AppViewController` conecta eventos DOM con comandos de aplicación y se suscribe al store. Los renders reciben datos y callbacks; no persisten datos ni modifican directamente el inventario.
 
-`src/ui/theme.ts`
+`main.ts` funciona únicamente como composition root: instancia el store, los adaptadores, la aplicación y el controlador de vista.
 
-- Maneja modo claro/oscuro.
-- Persiste preferencia en `localStorage`.
+## Build y pruebas
 
-## Build
+`scripts/build.mjs` descubre recursivamente los archivos TypeScript bajo `src/` y conserva su estructura en `dist/`. Añadir una clase o módulo ya no requiere modificar el script de build.
 
-`scripts/build.mjs` transforma los archivos TypeScript listados explicitamente en `dist/`.
+Las pruebas cubren tanto reglas de dominio como límites arquitectónicos: scoring, emisiones del store, inmutabilidad de inventario, fallback de repositorios y persistencia de comandos.
 
-Importante: si se agrega un nuevo archivo `.ts`, hay que agregarlo a la lista `sources` de `scripts/build.mjs` o migrar a un bundler formal como Vite/Astro.
+Comandos de validación:
 
-## Estado
-
-`src/app/state.ts` mantiene el estado de runtime:
-
-- `runs`: runs normalizados.
-- `catalog`: personajes y light cones unicos presentes en runs, con metadatos centralizados.
-- `inventory`: inventario actual del usuario.
-
-El inventario se guarda bajo la clave `herta-0cycle-inventory-v1`.
-El tema se guarda bajo la clave `herta-0cycle-theme-v1`.
+```powershell
+pnpm check
+pnpm lint
+pnpm test
+pnpm format:check
+```

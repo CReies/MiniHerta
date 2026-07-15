@@ -33,19 +33,6 @@ export function importInventory(
   return inventory;
 }
 
-export function loadSavedInventory(): Inventory {
-  try {
-    const raw = localStorage.getItem(inventoryStorageKey);
-    return raw ? importInventory(JSON.parse(raw) as SerializedInventory) : createEmptyInventory();
-  } catch {
-    return createEmptyInventory();
-  }
-}
-
-export function saveInventory(inventory: Inventory): void {
-  localStorage.setItem(inventoryStorageKey, JSON.stringify(serializeInventory(inventory)));
-}
-
 export function reconcileInventory(inventory: Inventory, characters: string[], lightCones: string[]): void {
   const characterSet = new Set(characters);
   const lightConeSet = new Set(lightCones);

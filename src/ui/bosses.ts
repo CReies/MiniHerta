@@ -2,14 +2,13 @@ import type { Elements } from "./dom.js";
 import type { Run } from "../domain/types.js";
 import { escapeHtml } from "../utils/text.js";
 
-export function renderBossOptions(els: Elements, runs: Run[]): void {
-  const current = els.bossFilter.value || "Todos";
+export function renderBossOptions(els: Elements, runs: Run[], selectedBoss = "Todos"): void {
   const bosses = ["Todos", ...uniqueBosses(runs)];
 
   els.bossFilter.innerHTML = bosses
     .map((boss) => `<option value="${escapeHtml(boss)}">${escapeHtml(boss)}</option>`)
     .join("");
-  els.bossFilter.value = bosses.includes(current) ? current : "Todos";
+  els.bossFilter.value = bosses.includes(selectedBoss) ? selectedBoss : "Todos";
 }
 
 function uniqueBosses(runs: Run[]): string[] {
