@@ -3,6 +3,7 @@ import test from "node:test";
 
 import { HertaApplication } from "../dist/app/application.js";
 import { AppStore } from "../dist/app/state.js";
+import { FolderRunsRepository } from "../dist/infrastructure/http/folder-runs-repository.js";
 
 function makeRawRun(id = "run-1") {
   return {
@@ -59,6 +60,35 @@ test("the application falls back to the next run repository", async () => {
   assert.equal(store.snapshot.runs.length, 1);
   assert.equal(store.snapshot.catalog.characters[0].name, "Acheron");
   assert.equal(saved.length, 1);
+});
+
+test("the folder repository loads and joins every run collection in its manifest", async () => {
+  const requested = [];
+  const payloads = new Map([
+    ["https://example.test/scrapped/index.json", { files: ["AA/4.3.json", "AA/4.4.json"] }],
+    ["https://example.test/scrapped/AA/4.3.json", { items: [makeRawRun("run-43")], count: 1 }],
+    ["https://example.test/scrapped/AA/4.4.json", { items: [makeRawRun("run-44")], count: 1 }],
+  ]);
+  async function fetcher(url) {
+    assert.equal(this, undefined);
+    requested.push(url);
+    const payload = payloads.get(url);
+    return {
+      ok: Boolean(payload),
+      status: payload ? 200 : 404,
+      url,
+      json: async () => payload,
+    };
+  }
+  const repository = new FolderRunsRepository("https://example.test/scrapped/index.json", fetcher);
+
+  const runs = await repository.load();
+
+  assert.deepEqual(
+    runs.map((run) => run.id),
+    ["run-43", "run-44"]
+  );
+  assert.deepEqual(requested, [...payloads.keys()]);
 });
 
 test("inventory commands persist a new collection without mutating prior state", async () => {

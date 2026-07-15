@@ -2,7 +2,7 @@
 
 Aplicacion local para cruzar runs 0-cycle de Honkai: Star Rail contra tu inventario real de personajes, eidolons, light cones y superimposiciones.
 
-La app carga `scrapped.json`, permite importar/exportar inventario, calcula equipos posibles y ordena equipos cercanos con un scoring ponderado por dificultad de obtener personajes/conos.
+La app carga todas las colecciones JSON de `scrapped/`, permite importar/exportar inventario, calcula equipos posibles y ordena equipos cercanos con un scoring ponderado por dificultad de obtener personajes/conos.
 
 ## Quick Start
 
@@ -55,6 +55,7 @@ $env:PORT="8123"; pnpm start:dev
 - `pnpm lint`: corre ESLint.
 - `pnpm format`: aplica Prettier.
 - `pnpm format:check`: valida formato.
+- `pnpm assets:download`: completa los assets de todas las colecciones en `scrapped/` y regenera su manifiesto.
 
 ## Documentacion
 
@@ -68,7 +69,7 @@ $env:PORT="8123"; pnpm start:dev
 - `styles.css`: estilos globales, modo claro y modo oscuro.
 - `src/`: codigo fuente TypeScript.
 - `dist/`: JavaScript generado por `pnpm build`.
-- `scrapped.json`: dataset de runs 0-cycle.
+- `scrapped/`: datasets de runs 0-cycle organizados por modo y temporada.
 - `banner-data/`: exports crudos de banners, TSV limpios e inventario generado.
 - `scripts/`: build, server local, modo dev y utilidades.
 

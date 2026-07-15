@@ -2,12 +2,14 @@
 
 ## Fuentes de Datos
 
-`scrapped.json`
+`scrapped/**/*.json`
 
-- Dataset principal de runs.
+- Datasets principales de runs, organizados por modo y temporada.
+- El build genera `scrapped/index.json` automáticamente para que el navegador descubra todas las fuentes.
 - La app toma runs con `subcategory = "0-Cycle"` o `metric_value = 0`.
 - Cada run contiene hasta cuatro personajes y cuatro light cones.
 - Tambien alimenta el catalogo runtime de items. El catalogo cruza esos nombres con assets generados, rarezas y labels preparados para traducciones futuras.
+- `pnpm assets:download` recorre todas las colecciones, descarga imágenes faltantes y regenera `src/generated/assets.ts`.
 
 `banner-data/*.txt`
 

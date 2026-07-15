@@ -97,7 +97,8 @@ El inventario se clona antes de actualizar sus `Map`, por lo que una vista o pru
 
 - `LocalStorageInventoryRepository` adapta `localStorage` al puerto de inventario.
 - `HttpRunsRepository` adapta cualquier endpoint JSON al puerto de runs.
-- `createDefaultRunsRepositories` configura el JSON local y la API remota como fallback.
+- `FolderRunsRepository` carga el manifiesto generado de `scrapped/` y une sus colecciones.
+- `createDefaultRunsRepositories` configura la carpeta local como fuente predeterminada.
 - `BrowserJsonFileGateway` encapsula lectura y descarga de archivos del navegador.
 
 Los fallos de una fuente de runs no contaminan el caso de uso: la aplicación intenta el siguiente repositorio configurado y solo publica un error cuando todos fallan.

@@ -1,15 +1,14 @@
-import { mkdir, readFile, stat, unlink, writeFile } from "node:fs/promises";
+import { mkdir, readFile, readdir, stat, unlink, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
 const force = process.argv.includes("--force");
 const concurrency = Number(process.env.HERTA_ASSET_CONCURRENCY || 6);
-const sourceFile = join(root, "scrapped.json");
+const scrappedRoot = join(root, "scrapped");
 const starRailResBase = "https://raw.githubusercontent.com/Mar-7th/StarRailRes/master";
 
-const rawPayload = JSON.parse(await readFile(sourceFile, "utf8"));
-const rawRuns = Array.isArray(rawPayload) ? rawPayload : rawPayload.items;
+const rawRuns = await loadRawRuns(scrappedRoot);
 const sourceIndexes = await loadSourceIndexes();
 const sourceNameAliases = {
   character: {},
@@ -70,6 +69,20 @@ function collectItems(kind, folder, remoteFolder, keyTemplate) {
     url: sourceAssetUrl(kind, name) || `https://theherta.com/${remoteFolder}/${encodeURIComponent(name)}.png`,
     baseOutput: join(root, "assets", folder, assetBaseName(name)),
   }));
+}
+
+async function loadRawRuns(directory) {
+  const entries = await readdir(directory, { withFileTypes: true });
+  const collections = await Promise.all(
+    entries.map(async (entry) => {
+      const path = join(directory, entry.name);
+      if (entry.isDirectory()) return loadRawRuns(path);
+      if (!entry.isFile() || !entry.name.endsWith(".json") || entry.name === "index.json") return [];
+      const payload = JSON.parse(await readFile(path, "utf8"));
+      return Array.isArray(payload) ? payload : payload.items || [];
+    })
+  );
+  return collections.flat();
 }
 
 async function loadSourceIndexes() {

@@ -43,8 +43,8 @@ jobs:
       - name: Prepare static site
         run: |
           mkdir _site
-          cp index.html styles.css scrapped.json _site/
-          cp -R assets dist _site/
+          cp index.html styles.css _site/
+          cp -R assets dist scrapped _site/
           deploy_version="${GITHUB_SHA::12}"
           sed -i "s|href=\"styles.css\"|href=\"styles.css?v=${deploy_version}\"|" _site/index.html
           sed -i "s|src=\"dist/main.js\"|src=\"dist/main.js?v=${deploy_version}\"|" _site/index.html

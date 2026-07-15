@@ -6,10 +6,14 @@ import { stripTypeScriptTypes } from "node:module";
 const root = fileURLToPath(new URL("../", import.meta.url));
 const srcRoot = join(root, "src");
 const outRoot = join(root, "dist");
+const scrappedRoot = join(root, "scrapped");
 
 const sources = await collectSources(srcRoot);
+const runSources = await collectRunSources(scrappedRoot);
 
 await rm(outRoot, { recursive: true, force: true });
+await writeFile(join(scrappedRoot, "index.json"), `${JSON.stringify({ files: runSources }, null, 2)}\n`, "utf8");
+console.log(`scrapped/index.json (${runSources.length} fuentes)`);
 
 for (const source of sources) {
   const input = join(srcRoot, source);
@@ -29,6 +33,19 @@ async function collectSources(directory) {
       const absolutePath = join(directory, entry.name);
       if (entry.isDirectory()) return collectSources(absolutePath);
       return entry.isFile() && entry.name.endsWith(".ts") ? [relative(srcRoot, absolutePath)] : [];
+    })
+  );
+  return nested.flat().sort();
+}
+
+async function collectRunSources(directory) {
+  const entries = await readdir(directory, { withFileTypes: true });
+  const nested = await Promise.all(
+    entries.map(async (entry) => {
+      const absolutePath = join(directory, entry.name);
+      if (entry.isDirectory()) return collectRunSources(absolutePath);
+      if (!entry.isFile() || !entry.name.endsWith(".json") || entry.name === "index.json") return [];
+      return [relative(scrappedRoot, absolutePath).replaceAll("\\", "/")];
     })
   );
   return nested.flat().sort();

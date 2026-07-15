@@ -4,11 +4,13 @@ import type { RawRun, RawRunCollection } from "../../domain/types.js";
 export class HttpRunsRepository implements RunsRepository {
   constructor(
     private readonly url: string,
-    private readonly request: RequestInit = {}
+    private readonly request: RequestInit = {},
+    private readonly fetcher: typeof fetch = fetch
   ) {}
 
   async load(): Promise<RawRun[]> {
-    const response = await fetch(this.url, { cache: "no-store", ...this.request });
+    const fetcher = this.fetcher;
+    const response = await fetcher(this.url, { cache: "no-store", ...this.request });
     if (!response.ok) throw new Error(`HTTP ${response.status} al cargar ${this.url}`);
 
     const payload = (await response.json()) as RawRun[] | RawRunCollection;

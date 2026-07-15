@@ -30,6 +30,5 @@ Thumbs.db
 .vscode/
 .idea/
 
-# Local/generated data
-scrapped.json
-!scrapped.json
+# Generated data
+scrapped/index.json
