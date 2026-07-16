@@ -44,7 +44,7 @@ function renderCharacters(
   onChange: InventoryItemChange
 ): void {
   els.characters.replaceChildren();
-  const characters = filteredCatalogItems(catalog.characters, search);
+  const characters = filterCharacters(catalog.characters, usageByCharacter, search);
 
   for (const character of characters) {
     els.characters.appendChild(
@@ -53,7 +53,9 @@ function renderCharacters(
   }
 
   if (characters.length === 0) {
-    els.characters.appendChild(createEmptyInventoryMessage("No hay personajes que coincidan con la búsqueda."));
+    els.characters.appendChild(
+      createEmptyInventoryMessage("No hay personajes ni conos recomendados que coincidan con la búsqueda.")
+    );
   }
 }
 
@@ -224,6 +226,22 @@ function bindLevelEditor(options: LevelEditorOptions): void {
 function filteredCatalogItems(items: CatalogItem[], search: string): CatalogItem[] {
   const query = normalizeText(search);
   return items.filter((item) => normalizeText(item.name).includes(query));
+}
+
+export function filterCharacters(
+  characters: CatalogItem[],
+  usageByCharacter: Map<string, LightConeUsage[]>,
+  search: string
+): CatalogItem[] {
+  const query = normalizeText(search);
+  if (!query) return characters;
+
+  return characters.filter((character) => {
+    if (normalizeText(character.name).includes(query)) return true;
+    return (usageByCharacter.get(character.name) ?? []).some((lightCone) =>
+      normalizeText(lightCone.name).includes(query)
+    );
+  });
 }
 
 function configureImage(image: HTMLImageElement, catalog: ItemCatalog, kind: ItemKind, item: string): void {

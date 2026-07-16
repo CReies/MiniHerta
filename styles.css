@@ -766,8 +766,8 @@ select {
 
 .recommended-cone-list {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 6px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 8px;
 }
 
 .light-cone-grid {
@@ -895,6 +895,7 @@ select {
   font-size: 11px;
   font-weight: 850;
   line-height: 1.25;
+  overflow-wrap: anywhere;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
@@ -927,10 +928,10 @@ select {
 }
 
 .recommended-cone-list .light-cone-card {
-  grid-template-columns: 60px minmax(0, 1fr);
-  min-height: 96px;
-  gap: 6px;
-  padding: 6px;
+  grid-template-columns: 82px minmax(0, 1fr);
+  min-height: 104px;
+  gap: 10px;
+  padding: 8px;
   border-radius: 12px;
   background: color-mix(in srgb, var(--panel-soft) 78%, transparent);
 }
@@ -940,11 +941,11 @@ select {
 }
 
 .recommended-cone-list .level-stepper--compact {
-  grid-template-columns: 25px minmax(48px, 1fr) 25px;
+  grid-template-columns: 28px minmax(72px, 1fr) 28px;
 }
 
 .recommended-cone-list .stepper-button {
-  width: 25px;
+  width: 28px;
 }
 
 .inventory-note {
@@ -1636,6 +1637,19 @@ select {
   .recommended-cone-list,
   .light-cone-grid {
     grid-template-columns: 1fr;
+  }
+
+  .recommended-cone-list .light-cone-card {
+    grid-template-columns: 64px minmax(0, 1fr);
+    gap: 6px;
+  }
+
+  .recommended-cone-list .level-stepper--compact {
+    grid-template-columns: 24px minmax(0, 1fr) 24px;
+  }
+
+  .recommended-cone-list .stepper-button {
+    width: 24px;
   }
 
   .filters,
