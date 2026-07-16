@@ -585,6 +585,7 @@ select {
   display: flex;
   align-items: flex-end;
   justify-content: center;
+  transform: translateY(-8%);
 }
 
 .character-card__portrait .inventory-image {
@@ -926,8 +927,8 @@ select {
 }
 
 .recommended-cone-list .light-cone-card {
-  grid-template-columns: 48px minmax(0, 1fr);
-  min-height: 88px;
+  grid-template-columns: 60px minmax(0, 1fr);
+  min-height: 96px;
   gap: 6px;
   padding: 6px;
   border-radius: 12px;
@@ -1285,9 +1286,13 @@ select {
 }
 
 .member-media > img:not(.lc-image) {
+  display: block;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  padding: clamp(8px, 1vw, 14px) clamp(12px, 1.4vw, 20px) 0;
+  box-sizing: border-box;
+  object-fit: contain;
+  object-position: center bottom;
   transition: transform 220ms ease;
 }
 
