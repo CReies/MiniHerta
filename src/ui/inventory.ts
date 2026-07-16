@@ -197,7 +197,7 @@ function bindLevelEditor(options: LevelEditorOptions): void {
   const { min, max } = inventoryLevelBounds(options.kind);
   const prefix = options.kind === "character" ? "E" : "S";
 
-  select.replaceChildren(new Option("Sin obtener", ""));
+  select.replaceChildren(new Option("—", ""));
   for (let value = min; value <= max; value += 1) {
     select.appendChild(new Option(`${prefix}${value}`, String(value)));
   }

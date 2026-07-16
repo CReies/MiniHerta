@@ -5,7 +5,6 @@ import type { BrowserJsonFileGateway } from "../infrastructure/browser/json-file
 import type { SerializedInventory } from "../domain/types.js";
 import { getFilters, type Elements } from "./dom.js";
 import { renderInventory, renderResults, renderRunFilterOptions } from "./render.js";
-import { loadTheme, toggleTheme } from "./theme.js";
 
 export class AppViewController {
   private unsubscribe: (() => void) | null = null;
@@ -23,7 +22,6 @@ export class AppViewController {
   ) {}
 
   start(): void {
-    loadTheme(this.els);
     this.bindEvents();
     window.addEventListener("hashchange", this.handleHashChange);
     this.syncView();
@@ -41,7 +39,6 @@ export class AppViewController {
     this.els.jsonFile.addEventListener("change", (event) => void this.importRuns(event));
     this.els.inventoryFile.addEventListener("change", (event) => void this.importInventory(event));
     this.els.exportInventory.addEventListener("click", () => this.exportInventory());
-    this.els.themeToggle.addEventListener("click", () => toggleTheme(this.els));
     this.els.resetBuild.addEventListener("click", () => this.application.resetInventory());
 
     this.els.characterSearch.addEventListener("input", () =>

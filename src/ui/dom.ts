@@ -4,7 +4,6 @@ export interface Elements {
   jsonFile: HTMLInputElement;
   inventoryFile: HTMLInputElement;
   exportInventory: HTMLButtonElement;
-  themeToggle: HTMLButtonElement;
   resetBuild: HTMLButtonElement;
   characterSearch: HTMLInputElement;
   lightConeSearch: HTMLInputElement;
@@ -30,7 +29,6 @@ const ids = [
   "jsonFile",
   "inventoryFile",
   "exportInventory",
-  "themeToggle",
   "resetBuild",
   "characterSearch",
   "lightConeSearch",

@@ -4,20 +4,12 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="theme-color" content="#0e0d16" />
-    <meta name="color-scheme" content="dark light" />
+    <meta name="color-scheme" content="dark" />
     <meta
       name="description"
       content="Encuentra equipos de 0 ciclos de Honkai: Star Rail compatibles con tus personajes y light cones."
     />
     <title>0-Cycle Team Finder</title>
-    <script>
-      try {
-        const savedTheme = localStorage.getItem("herta-0cycle-theme-v1");
-        document.documentElement.dataset.theme = savedTheme === "light" ? "light" : "dark";
-      } catch {
-        document.documentElement.dataset.theme = "dark";
-      }
-    </script>
     <link
       rel="preload"
       as="image"
@@ -66,18 +58,6 @@
           </svg>
           <span>Cargar runs</span>
         </label>
-        <button id="themeToggle" class="button button--icon" type="button" aria-pressed="true">
-          <svg class="icon theme-icon theme-icon--moon" viewBox="0 0 24 24" aria-hidden="true">
-            <path d="M20.5 14.2A8.5 8.5 0 0 1 9.8 3.5 8.5 8.5 0 1 0 20.5 14.2Z" />
-          </svg>
-          <svg class="icon theme-icon theme-icon--sun" viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="12" cy="12" r="3.5" />
-            <path
-              d="M12 2v2m0 16v2M4.93 4.93l1.42 1.42m11.3 11.3 1.42 1.42M2 12h2m16 0h2M4.93 19.07l1.42-1.42m11.3-11.3 1.42-1.42"
-            />
-          </svg>
-          <span data-theme-label>Modo claro</span>
-        </button>
       </div>
     </header>
 
