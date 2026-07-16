@@ -19,6 +19,7 @@ const sourceNameAliases = {
 };
 const sourceIdAliases = {
   character: {
+    "March 7th (Hunt)": "1224",
     "Trailblazer (Harmony)": "8005",
     "Trailblazer (Remembrance)": "8007",
     "Trailblazer (Elation)": "8009",
@@ -124,7 +125,7 @@ async function downloadAsset(asset) {
   await mkdir(join(root, "assets", asset.folder), { recursive: true });
 
   const existing = await findExistingAsset(asset);
-  if (!force && existing) {
+  if (!force && existing && !(await shouldRefreshExisting(asset, existing.output))) {
     manifest[asset.kind][asset.name] = existing.url;
     skipped++;
     return;
@@ -171,6 +172,13 @@ async function findExistingAsset(asset) {
       return { output, url: `assets/${asset.folder}/${assetBaseName(asset.name)}.${extension}` };
   }
   return null;
+}
+
+async function shouldRefreshExisting(asset, path) {
+  if (asset.kind !== "character" || !asset.url.includes("/image/character_preview/")) return false;
+
+  const metadata = await sharp(await readFile(path)).metadata();
+  return Boolean(metadata.width && metadata.height && metadata.width / metadata.height >= 0.9);
 }
 
 async function optimizeAsset(buffer, kind) {
