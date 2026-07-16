@@ -245,12 +245,16 @@ export function filterCharacters(
 }
 
 function configureImage(image: HTMLImageElement, catalog: ItemCatalog, kind: ItemKind, item: string): void {
-  image.src = itemImageUrl(catalog, kind, item);
   image.alt = "";
   image.hidden = false;
+  image.onload = () => {
+    const aspectRatio = image.naturalWidth / image.naturalHeight;
+    image.classList.toggle("inventory-image--square", kind === "character" && aspectRatio >= 0.9);
+  };
   image.onerror = () => {
     image.hidden = true;
   };
+  image.src = itemImageUrl(catalog, kind, item);
 }
 
 function cloneTemplate(template: HTMLTemplateElement): HTMLElement {
