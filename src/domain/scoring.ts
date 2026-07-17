@@ -29,7 +29,7 @@ export function evaluateRun(
   };
 }
 
-export function matchesFilters(run: EvaluatedRun, filters: FilterState): boolean {
+export function matchesFilters(run: EvaluatedRun, filters: FilterState, additionalSearchText = ""): boolean {
   if (filters.endgame && filters.endgame !== "Todos" && run.endgame !== filters.endgame) return false;
   if (filters.version && run.version !== filters.version) return false;
 
@@ -37,9 +37,14 @@ export function matchesFilters(run: EvaluatedRun, filters: FilterState): boolean
   if (!query) return true;
 
   const haystack = normalizeText(
-    [run.author, run.boss, run.endgame, run.version, ...run.team.flatMap((member) => [member.char, member.lc])].join(
-      " "
-    )
+    [
+      run.author,
+      run.boss,
+      run.endgame,
+      run.version,
+      ...run.team.flatMap((member) => [member.char, member.lc]),
+      additionalSearchText,
+    ].join(" ")
   );
   return haystack.includes(query);
 }

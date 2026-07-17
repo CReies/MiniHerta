@@ -5,11 +5,18 @@
 `scrapped/**/*.json`
 
 - Datasets principales de runs, organizados por modo y temporada.
-- El build genera `scrapped/index.json` automáticamente para que el navegador descubra todas las fuentes.
+- El build genera `scrapped/index.json` con modo, versión y fecha de actualización. El navegador descarga sólo la fuente más reciente al inicio y solicita otra al cambiar los filtros.
 - La app toma runs con `subcategory = "0-Cycle"` o `metric_value = 0`.
 - Cada run contiene hasta cuatro personajes y cuatro light cones.
-- Tambien alimenta el catalogo runtime de items. El catalogo cruza esos nombres con assets generados, rarezas y labels preparados para traducciones futuras.
+- Tambien alimenta el catalogo runtime de items. El catalogo cruza esos nombres con assets generados, rarezas y etiquetas en inglés y español.
 - `pnpm assets:download` recorre todas las colecciones, descarga imágenes faltantes y regenera `src/generated/assets.ts`.
+
+`src/data/spanish-item-names.ts`
+
+- Las traducciones de personajes y Conos de Luz provienen de [Mar-7th/StarRailRes](https://github.com/Mar-7th/StarRailRes).
+- Los catálogos `index_new/en` e `index_new/es` se cruzaron por el ID estable del recurso del juego.
+- El nombre inglés continúa siendo la clave interna de inventarios y runs; el español es una etiqueta de presentación.
+- Cuando una entrada nueva todavía no existe en el catálogo español, la interfaz conserva el nombre inglés como fallback.
 
 `banner-data/*.txt`
 
@@ -98,7 +105,7 @@ La app acepta inventarios con estas claves:
 
 Al importar:
 
-- Se descartan personajes/conos que no existan en el catalogo construido desde los runs cargados.
+- Se conservan personajes/conos aunque no aparezcan en la colección cargada, porque el catálogo runtime contiene sólo el endgame y la versión activos.
 - Se ajustan valores fuera de rango.
 - Se guarda el resultado en `localStorage`.
 

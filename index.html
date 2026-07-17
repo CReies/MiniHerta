@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es" data-theme="dark">
+<html lang="en" data-theme="dark">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -7,7 +7,7 @@
     <meta name="color-scheme" content="dark" />
     <meta
       name="description"
-      content="Encuentra equipos de 0 ciclos de Honkai: Star Rail compatibles con tus personajes y light cones."
+      content="Find Honkai: Star Rail 0-cycle teams compatible with your characters and Light Cones."
     />
     <title>0-Cycle Team Finder</title>
     <link
@@ -34,7 +34,7 @@
           <small>Honkai: Star Rail</small>
         </span>
       </div>
-      <nav class="view-nav" aria-label="Vistas principales">
+      <nav class="view-nav" aria-label="Main views" data-i18n-aria-label="nav.aria">
         <a class="view-nav__link" href="#team-finder" data-view-link="team-finder">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M4 6h16M4 12h16M4 18h10" />
@@ -46,22 +46,29 @@
             <path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5v-9Z" />
             <path d="m4.5 7.5 7.5 4.2 7.5-4.2M12 12v9" />
           </svg>
-          Inventario
+          <span data-i18n="nav.inventory">Inventory</span>
         </a>
       </nav>
       <div class="top-actions">
+        <label class="language-picker">
+          <span class="sr-only" data-i18n="language.label">Language</span>
+          <select id="languageSelect" aria-label="Language" data-i18n-aria-label="language.label">
+            <option value="en">EN</option>
+            <option value="es">ES</option>
+          </select>
+        </label>
         <label class="button button--secondary import-button">
           <input id="jsonFile" type="file" accept="application/json" />
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5" />
             <path d="M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" />
           </svg>
-          <span>Cargar runs</span>
+          <span data-i18n="actions.loadRuns">Load runs</span>
         </label>
       </div>
     </header>
 
-    <section class="hero" aria-label="Boss destacado">
+    <section class="hero" aria-label="Featured boss" data-i18n-aria-label="hero.aria">
       <img
         class="hero-boss"
         src="assets/bosses/murata-graphia-banner.webp"
@@ -86,9 +93,11 @@
               </svg>
             </span>
             <div class="inventory-title">
-              <p class="eyebrow">Tu colección</p>
-              <h2 id="inventoryHeading">Inventario</h2>
-              <p>Arma tu cuenta y revisa los conos que más se usan con cada personaje.</p>
+              <p class="eyebrow" data-i18n="inventory.eyebrow">Your collection</p>
+              <h2 id="inventoryHeading" data-i18n="inventory.title">Inventory</h2>
+              <p data-i18n="inventory.subtitle">
+                Build your account and review the Light Cones most often used with each character.
+              </p>
             </div>
             <div class="inventory-actions">
               <label class="button button--primary import-button">
@@ -97,21 +106,21 @@
                   <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5" />
                   <path d="M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" />
                 </svg>
-                Importar
+                <span data-i18n="actions.import">Import</span>
               </label>
               <button id="exportInventory" class="button button--secondary" type="button">
                 <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M12 4v12m0 0 4.5-4.5M12 16l-4.5-4.5" />
                   <path d="M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4" />
                 </svg>
-                Exportar
+                <span data-i18n="actions.export">Export</span>
               </button>
               <button id="resetBuild" class="button button--ghost" type="button">
                 <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M4 12a8 8 0 1 0 2.35-5.65L4 8.7" />
                   <path d="M4 4v4.7h4.7" />
                 </svg>
-                Reiniciar
+                <span data-i18n="actions.reset">Reset</span>
               </button>
             </div>
           </div>
@@ -119,17 +128,24 @@
           <section class="inventory-section inventory-section--characters">
             <div class="section-heading">
               <div class="section-copy">
-                <p class="eyebrow">Personajes y builds frecuentes</p>
-                <h3>Personajes</h3>
-                <p id="characterCount">0 en tu cuenta</p>
+                <p class="eyebrow" data-i18n="inventory.charactersEyebrow">Characters and frequent builds</p>
+                <h3 data-i18n="inventory.characters">Characters</h3>
+                <p id="characterCount">0 on your account</p>
               </div>
               <label class="search-box">
-                <span class="sr-only">Buscar personaje o light cone recomendado</span>
+                <span class="sr-only" data-i18n="inventory.characterSearchLabel"
+                  >Search for a character or recommended Light Cone</span
+                >
                 <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
                   <circle cx="11" cy="11" r="6.5" />
                   <path d="m16 16 4 4" />
                 </svg>
-                <input id="characterSearch" type="search" placeholder="Buscar personaje o cono" />
+                <input
+                  id="characterSearch"
+                  type="search"
+                  placeholder="Search character or Light Cone"
+                  data-i18n-placeholder="inventory.characterSearch"
+                />
               </label>
             </div>
             <div id="characters" class="inventory-list character-grid"></div>
@@ -138,21 +154,26 @@
           <section class="inventory-section inventory-section--light-cones">
             <div class="section-heading">
               <div class="section-copy">
-                <p class="eyebrow">Fuera de las recomendaciones</p>
-                <h3>Otros light cones</h3>
-                <p id="lightConeCount">0 en tu cuenta</p>
+                <p class="eyebrow" data-i18n="inventory.otherEyebrow">Outside the recommendations</p>
+                <h3 data-i18n="inventory.otherCones">Other Light Cones</h3>
+                <p id="lightConeCount">0 on your account</p>
               </div>
               <label class="search-box">
-                <span class="sr-only">Buscar otro light cone</span>
+                <span class="sr-only" data-i18n="inventory.coneSearchLabel">Search for another Light Cone</span>
                 <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
                   <circle cx="11" cy="11" r="6.5" />
                   <path d="m16 16 4 4" />
                 </svg>
-                <input id="lightConeSearch" type="search" placeholder="Buscar en otros conos" />
+                <input
+                  id="lightConeSearch"
+                  type="search"
+                  placeholder="Search other Light Cones"
+                  data-i18n-placeholder="inventory.coneSearch"
+                />
               </label>
             </div>
-            <p class="inventory-note">
-              Los tres conos más usados de cada personaje están dentro de su tarjeta. Aquí solo aparecen los demás.
+            <p class="inventory-note" data-i18n="inventory.note">
+              Each character's three most used Light Cones are inside their card. Only the rest appear here.
             </p>
             <div id="lightCones" class="inventory-list light-cone-grid"></div>
           </section>
@@ -164,10 +185,10 @@
           <section class="filters panel" aria-labelledby="resultsHeading">
             <div class="filters-intro">
               <div>
-                <p class="eyebrow">Recomendaciones</p>
-                <h2 id="resultsHeading">Equipos para tu cuenta</h2>
+                <p class="eyebrow" data-i18n="results.eyebrow">Recommendations</p>
+                <h2 id="resultsHeading" data-i18n="results.title">Teams for your account</h2>
               </div>
-              <p>De los que ya puedes usar a los que requieren más inversión.</p>
+              <p data-i18n="results.subtitle">From teams you can already use to those that need more investment.</p>
             </div>
             <div class="filter-grid">
               <label class="field-label">
@@ -190,7 +211,7 @@
                       d="M7 3v3M17 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z"
                     />
                   </svg>
-                  Versión
+                  <span data-i18n="filters.version">Version</span>
                 </span>
                 <span class="select-box">
                   <select id="versionFilter"></select>
@@ -203,13 +224,13 @@
                     <path d="m12 3 6 3.5v7L12 21l-6-7.5v-7L12 3Z" />
                     <path d="m9 8.5 3 1.8 3-1.8M12 10.3V16" />
                   </svg>
-                  Light cones
+                  <span data-i18n="filters.lightCones">Light Cones</span>
                 </span>
                 <span class="select-box">
                   <select id="lcMode">
-                    <option value="strict">LC y superimposición</option>
-                    <option value="name">Solo el light cone</option>
-                    <option value="ignore">Ignorar light cones</option>
+                    <option value="strict" data-i18n="filters.strict">Light Cone and superimposition</option>
+                    <option value="name" data-i18n="filters.name">Light Cone only</option>
+                    <option value="ignore" data-i18n="filters.ignore">Ignore Light Cones</option>
                   </select>
                   <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 10 4 4 4-4" /></svg>
                 </span>
@@ -220,14 +241,19 @@
                     <circle cx="11" cy="11" r="6.5" />
                     <path d="m16 16 4 4" />
                   </svg>
-                  Buscar en resultados
+                  <span data-i18n="filters.search">Search results</span>
                 </span>
                 <span class="search-box search-box--results">
                   <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
                     <circle cx="11" cy="11" r="6.5" />
                     <path d="m16 16 4 4" />
                   </svg>
-                  <input id="resultSearch" type="search" placeholder="Personaje, autor o light cone" />
+                  <input
+                    id="resultSearch"
+                    type="search"
+                    placeholder="Character, author, or Light Cone"
+                    data-i18n-placeholder="filters.searchPlaceholder"
+                  />
                 </span>
               </label>
             </div>
@@ -241,7 +267,7 @@
                   <path d="m8 12 2.5 2.5L16 9" /></svg
               ></span>
               <span class="summary-value" id="possibleCount">0</span>
-              <small>posibles ahora</small>
+              <small data-i18n="summary.possible">possible now</small>
             </div>
             <div class="summary-card summary-card--near">
               <span class="summary-icon" aria-hidden="true"
@@ -250,14 +276,14 @@
                   <circle cx="12" cy="12" r="9" /></svg
               ></span>
               <span class="summary-value" id="nearCount">0</span>
-              <small>equipos cercanos</small>
+              <small data-i18n="summary.near">nearby teams</small>
             </div>
             <div class="summary-card summary-card--total">
               <span class="summary-icon" aria-hidden="true"
                 ><svg class="icon" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10" /></svg
               ></span>
               <span class="summary-value" id="runCount">0</span>
-              <small>runs analizados</small>
+              <small data-i18n="summary.total">runs analyzed</small>
             </div>
           </div>
 
@@ -272,13 +298,13 @@
           <input class="owned-input" type="checkbox" />
           <span class="inventory-image-wrap"><img class="inventory-image" alt="" loading="lazy" /></span>
           <span class="owned-chip"
-            ><span class="owned-chip__check">✓</span><span data-owned-label>En cuenta</span></span
+            ><span class="owned-chip__check">✓</span><span data-owned-label data-i18n="card.owned">Owned</span></span
           >
         </label>
         <div class="character-card__content">
           <header class="character-card__header">
             <div>
-              <p class="card-kicker">Personaje</p>
+              <p class="card-kicker" data-i18n="card.character">Character</p>
               <h4 class="name"></h4>
             </div>
             <span class="rarity-badge"></span>
@@ -296,8 +322,8 @@
           </div>
           <section class="character-recommendations">
             <div class="recommendation-heading">
-              <span>Conos más usados</span>
-              <small>Top 3 en runs</small>
+              <span data-i18n="card.topCones">Most used Light Cones</span>
+              <small data-i18n="card.topRuns">Top 3 in runs</small>
             </div>
             <div class="recommended-cone-list"></div>
           </section>
@@ -321,7 +347,7 @@
           <div class="level-stepper level-stepper--compact">
             <button class="stepper-button" data-step="decrement" type="button">−</button>
             <label class="level-select"
-              ><span class="sr-only">Superimposición</span
+              ><span class="sr-only" data-i18n="level.superimposition">Superimposition</span
               ><select></select
             ></label>
             <button class="stepper-button" data-step="increment" type="button">+</button>

@@ -5,9 +5,11 @@ import type { BrowserJsonFileGateway } from "../infrastructure/browser/json-file
 import type { SerializedInventory } from "../domain/types.js";
 import { getFilters, type Elements } from "./dom.js";
 import { renderInventory, renderResults, renderRunFilterOptions } from "./render.js";
+import { getLocale, setLocale, subscribeLocale, t, translateDocument, type Locale } from "../i18n.js";
 
 export class AppViewController {
   private unsubscribe: (() => void) | null = null;
+  private unsubscribeLocale: (() => void) | null = null;
   private resultLimit = 24;
   private readonly handleHashChange = (): void => {
     this.syncView();
@@ -22,16 +24,24 @@ export class AppViewController {
   ) {}
 
   start(): void {
+    this.els.languageSelect.value = getLocale();
     this.bindEvents();
     window.addEventListener("hashchange", this.handleHashChange);
     this.syncView();
     this.unsubscribe = this.store.subscribe((state) => this.render(state));
+    this.unsubscribeLocale = subscribeLocale(() => {
+      this.els.languageSelect.value = getLocale();
+      translateDocument();
+      this.render(this.store.snapshot);
+    });
     void this.application.initialize();
   }
 
   stop(): void {
     this.unsubscribe?.();
     this.unsubscribe = null;
+    this.unsubscribeLocale?.();
+    this.unsubscribeLocale = null;
     window.removeEventListener("hashchange", this.handleHashChange);
   }
 
@@ -40,6 +50,7 @@ export class AppViewController {
     this.els.inventoryFile.addEventListener("change", (event) => void this.importInventory(event));
     this.els.exportInventory.addEventListener("click", () => this.exportInventory());
     this.els.resetBuild.addEventListener("click", () => this.application.resetInventory());
+    this.els.languageSelect.addEventListener("change", () => setLocale(this.els.languageSelect.value as Locale));
 
     this.els.characterSearch.addEventListener("input", () =>
       this.application.updateInventorySearch("character", this.els.characterSearch.value)
@@ -48,7 +59,13 @@ export class AppViewController {
       this.application.updateInventorySearch("lightCone", this.els.lightConeSearch.value)
     );
 
-    for (const element of [this.els.endgameFilter, this.els.versionFilter, this.els.lcMode, this.els.resultSearch]) {
+    for (const element of [this.els.endgameFilter, this.els.versionFilter]) {
+      element.addEventListener("input", () => {
+        this.resultLimit = 24;
+        void this.application.selectRunSource(this.els.endgameFilter.value, this.els.versionFilter.value);
+      });
+    }
+    for (const element of [this.els.lcMode, this.els.resultSearch]) {
       element.addEventListener("input", () => {
         this.resultLimit = 24;
         this.application.updateFilters(getFilters(this.els));
@@ -61,7 +78,7 @@ export class AppViewController {
       const payload = await this.files.readFromEvent<RawRunsPayload>(event);
       if (payload) this.application.replaceRunsPayload(payload);
     } catch {
-      this.application.reportError("Ese archivo no parece ser un JSON válido de runs.");
+      this.application.reportError(t("error.runsFile"));
     }
   }
 
@@ -70,7 +87,7 @@ export class AppViewController {
       const inventory = await this.files.readFromEvent<SerializedInventory>(event);
       if (inventory) this.application.importInventory(inventory);
     } catch {
-      this.application.reportError("Ese inventario no parece ser un JSON válido.");
+      this.application.reportError(t("error.inventoryFile"));
     }
   }
 
@@ -108,17 +125,32 @@ export class AppViewController {
         state.catalog,
         state.runs,
         state.inventorySearch,
-        (kind, item, level) => this.application.updateInventoryItem(kind, item, level)
+        (kind, item, level) => this.application.updateInventoryItem(kind, item, level),
+        getLocale()
       );
     } else {
       this.els.characters.replaceChildren();
       this.els.lightCones.replaceChildren();
-      renderRunFilterOptions(this.els, state.runs, state.filters.endgame, state.filters.version);
+      renderRunFilterOptions(
+        this.els,
+        state.runSources.length > 0 ? state.runSources : state.runs,
+        state.filters.endgame,
+        state.filters.version,
+        getLocale()
+      );
       const { evaluated, visible } = selectResults(state);
-      renderResults(this.els, evaluated, visible, state.catalog, this.resultLimit, () => {
-        this.resultLimit += 24;
-        this.render(this.store.snapshot);
-      });
+      renderResults(
+        this.els,
+        evaluated,
+        visible,
+        state.catalog,
+        this.resultLimit,
+        () => {
+          this.resultLimit += 24;
+          this.render(this.store.snapshot);
+        },
+        getLocale()
+      );
     }
 
     if ((state.status === "error" || state.runs.length === 0) && state.statusMessage) {

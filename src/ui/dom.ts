@@ -19,6 +19,7 @@ export interface Elements {
   results: HTMLElement;
   characterCount: HTMLElement;
   lightConeCount: HTMLElement;
+  languageSelect: HTMLSelectElement;
   characterCardTemplate: HTMLTemplateElement;
   lightConeCardTemplate: HTMLTemplateElement;
   viewPages: HTMLElement[];
@@ -44,6 +45,7 @@ const ids = [
   "results",
   "characterCount",
   "lightConeCount",
+  "languageSelect",
 ] as const;
 
 export function getElements(): Elements {
