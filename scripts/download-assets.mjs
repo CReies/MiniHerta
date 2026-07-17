@@ -6,10 +6,10 @@ import sharp from "sharp";
 const root = fileURLToPath(new URL("../", import.meta.url));
 const force = process.argv.includes("--force");
 const concurrency = Number(process.env.HERTA_ASSET_CONCURRENCY || 6);
-const scrappedRoot = join(root, "scrapped");
+const runsRoot = join(root, "runs");
 const starRailResBase = "https://raw.githubusercontent.com/Mar-7th/StarRailRes/master";
 
-const rawRuns = await loadRawRuns(scrappedRoot);
+const rawRuns = await loadRawRuns(runsRoot);
 const sourceIndexes = await loadSourceIndexes();
 const sourceNameAliases = {
   character: {},

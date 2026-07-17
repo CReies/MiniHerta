@@ -15,7 +15,7 @@ El unico requisito de infraestructura es servir estos archivos por HTTP:
 - `index.html`
 - `styles.css`
 - `dist/**/*.js`
-- `scrapped/`
+- `runs/`
 - opcionalmente `banner-data/inventory.json` y docs/datos auxiliares
 
 ## Desarrollo Local
@@ -72,7 +72,7 @@ Luego publicar estos paths:
 index.html
 styles.css
 dist/
-scrapped/
+runs/
 banner-data/inventory.json   opcional
 ```
 
@@ -98,7 +98,7 @@ Nota: como el publish directory es la raiz, configurar ignores/excludes si el pr
 No hay Dockerfile actualmente. Si se necesita contenedor, basta un build multi-stage:
 
 1. Stage Node: `pnpm install`, `pnpm build`.
-2. Stage nginx/caddy: copiar `index.html`, `styles.css`, `dist/`, `assets/` y `scrapped/`.
+2. Stage nginx/caddy: copiar `index.html`, `styles.css`, `dist/`, `assets/` y `runs/`.
 
 No hace falta proceso Node en runtime si se usa nginx/caddy.
 
@@ -133,7 +133,7 @@ pnpm build
 Verificar manualmente:
 
 - La pagina abre.
-- `scrapped/index.json` indexa las colecciones; el cliente carga la más reciente y solicita las demás al cambiar filtros.
+- `runs/index.json` indexa las colecciones; el cliente carga la más reciente y solicita las demás al cambiar filtros.
 - Importar inventario funciona.
 - Exportar inventario descarga JSON.
 - Modo oscuro persiste.

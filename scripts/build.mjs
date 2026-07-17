@@ -6,14 +6,14 @@ import { stripTypeScriptTypes } from "node:module";
 const root = fileURLToPath(new URL("../", import.meta.url));
 const srcRoot = join(root, "src");
 const outRoot = join(root, "dist");
-const scrappedRoot = join(root, "scrapped");
+const runsRoot = join(root, "runs");
 
 const sources = await collectSources(srcRoot);
-const runSources = await collectRunSources(scrappedRoot);
+const runSources = await collectRunSources(runsRoot);
 
 await rm(outRoot, { recursive: true, force: true });
-await writeFile(join(scrappedRoot, "index.json"), `${JSON.stringify({ sources: runSources }, null, 2)}\n`, "utf8");
-console.log(`scrapped/index.json (${runSources.length} fuentes)`);
+await writeFile(join(runsRoot, "index.json"), `${JSON.stringify({ sources: runSources }, null, 2)}\n`, "utf8");
+console.log(`runs/index.json (${runSources.length} fuentes)`);
 
 for (const source of sources) {
   const input = join(srcRoot, source);
@@ -49,17 +49,22 @@ async function collectRunSources(directory) {
       const firstRun = (Array.isArray(payload) ? payload : payload.items)?.[0] ?? {};
       const data = firstRun.data ?? {};
       const fileStat = await stat(absolutePath);
-      return [{
-        file: relative(scrappedRoot, absolutePath).replaceAll("\\", "/"),
-        endgame: String(data.mode ?? firstRun.mode ?? relative(scrappedRoot, dirname(absolutePath))),
-        version: String(data.season ?? firstRun.season ?? basename(entry.name, ".json")),
-        updatedAt: fileStat.mtime.toISOString(),
-      }];
+      return [
+        {
+          file: relative(runsRoot, absolutePath).replaceAll("\\", "/"),
+          endgame: String(data.mode ?? firstRun.mode ?? relative(runsRoot, dirname(absolutePath))),
+          version: String(data.season ?? firstRun.season ?? basename(entry.name, ".json")),
+          updatedAt: fileStat.mtime.toISOString(),
+        },
+      ];
     })
   );
-  return nested.flat().sort((a, b) =>
-    b.updatedAt.localeCompare(a.updatedAt) ||
-    b.version.localeCompare(a.version, undefined, { numeric: true }) ||
-    a.file.localeCompare(b.file)
-  );
+  return nested
+    .flat()
+    .sort(
+      (a, b) =>
+        b.updatedAt.localeCompare(a.updatedAt) ||
+        b.version.localeCompare(a.version, undefined, { numeric: true }) ||
+        a.file.localeCompare(b.file)
+    );
 }

@@ -1,5 +1,6 @@
 dist
 node_modules
+runs
 banner-data/cleaned
 banner-data/*.json
 scrapped.json

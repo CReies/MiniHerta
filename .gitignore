@@ -31,7 +31,7 @@ Thumbs.db
 .idea/
 
 # Generated data
-scrapped/index.json
+runs/index.json
 
 # Lighthouse reports
 reports/

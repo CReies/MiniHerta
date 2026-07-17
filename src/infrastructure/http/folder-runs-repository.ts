@@ -36,7 +36,7 @@ export class FolderRunsRepository implements SelectableRunsRepository {
       ? manifest.sources
       : (manifest.files ?? []).map(sourceFromLegacyPath);
     if (sources.length === 0) {
-      throw new Error("El índice de scrapped/ no contiene fuentes de runs");
+      throw new Error("El índice de runs/ no contiene fuentes de runs");
     }
 
     for (const source of sources) {
@@ -56,12 +56,12 @@ export class FolderRunsRepository implements SelectableRunsRepository {
 function isRunSource(value: Partial<RunSource> | undefined): value is RunSource {
   return Boolean(
     value &&
-      isRelativeJsonPath(value.file) &&
-      typeof value.endgame === "string" &&
-      value.endgame.length > 0 &&
-      typeof value.version === "string" &&
-      value.version.length > 0 &&
-      typeof value.updatedAt === "string"
+    isRelativeJsonPath(value.file) &&
+    typeof value.endgame === "string" &&
+    value.endgame.length > 0 &&
+    typeof value.version === "string" &&
+    value.version.length > 0 &&
+    typeof value.updatedAt === "string"
   );
 }
 

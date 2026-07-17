@@ -2,10 +2,10 @@
 
 ## Fuentes de Datos
 
-`scrapped/**/*.json`
+`runs/**/*.json`
 
 - Datasets principales de runs, organizados por modo y temporada.
-- El build genera `scrapped/index.json` con modo, versión y fecha de actualización. El navegador descarga sólo la fuente más reciente al inicio y solicita otra al cambiar los filtros.
+- El build genera `runs/index.json` con modo, versión y fecha de actualización. El navegador descarga sólo la fuente más reciente al inicio y solicita otra al cambiar los filtros.
 - La app toma runs con `subcategory = "0-Cycle"` o `metric_value = 0`.
 - Cada run contiene hasta cuatro personajes y cuatro light cones.
 - Tambien alimenta el catalogo runtime de items. El catalogo cruza esos nombres con assets generados, rarezas y etiquetas en inglés y español.

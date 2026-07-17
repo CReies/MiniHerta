@@ -5,7 +5,7 @@ import { fileURLToPath } from "node:url";
 import { serve } from "./serve.mjs";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
-const watchTargets = ["src", "scrapped", "index.html", "styles.css"].map((target) => join(root, target));
+const watchTargets = ["src", "runs", "index.html", "styles.css"].map((target) => join(root, target));
 let buildRunning = false;
 let buildQueued = false;
 let debounceTimer;
@@ -16,13 +16,13 @@ serve();
 for (const target of watchTargets) {
   if (!existsSync(target)) continue;
   watch(target, { recursive: true }, (_eventType, filename) => {
-    if (target === join(root, "scrapped") && filename === "index.json") return;
+    if (target === join(root, "runs") && filename === "index.json") return;
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(queueBuild, 80);
   });
 }
 
-console.log("Watching src/, scrapped/, index.html and styles.css");
+console.log("Watching src/, runs/, index.html and styles.css");
 
 function queueBuild() {
   if (buildRunning) {

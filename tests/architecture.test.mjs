@@ -80,9 +80,9 @@ test("the folder repository loads only the newest run collection by default", as
     { file: "AA/4.3.json", endgame: "Anomaly Arbitration", version: "4.3", updatedAt: "2026-07-15" },
   ];
   const payloads = new Map([
-    ["https://example.test/scrapped/index.json", { sources }],
-    ["https://example.test/scrapped/AA/4.3.json", { items: [makeRawRun("run-43")], count: 1 }],
-    ["https://example.test/scrapped/AA/4.4.json", { items: [makeRawRun("run-44")], count: 1 }],
+    ["https://example.test/runs/index.json", { sources }],
+    ["https://example.test/runs/AA/4.3.json", { items: [makeRawRun("run-43")], count: 1 }],
+    ["https://example.test/runs/AA/4.4.json", { items: [makeRawRun("run-44")], count: 1 }],
   ]);
   async function fetcher(url) {
     assert.equal(this, undefined);
@@ -95,18 +95,21 @@ test("the folder repository loads only the newest run collection by default", as
       json: async () => payload,
     };
   }
-  const repository = new FolderRunsRepository("https://example.test/scrapped/index.json", fetcher);
+  const repository = new FolderRunsRepository("https://example.test/runs/index.json", fetcher);
 
   const runs = await repository.load();
 
-  assert.deepEqual(runs.map((run) => run.id), ["run-44"]);
-  assert.deepEqual(requested, [
-    "https://example.test/scrapped/index.json",
-    "https://example.test/scrapped/AA/4.4.json",
-  ]);
+  assert.deepEqual(
+    runs.map((run) => run.id),
+    ["run-44"]
+  );
+  assert.deepEqual(requested, ["https://example.test/runs/index.json", "https://example.test/runs/AA/4.4.json"]);
 
   const olderRuns = await repository.loadSource(sources[1]);
-  assert.deepEqual(olderRuns.map((run) => run.id), ["run-43"]);
+  assert.deepEqual(
+    olderRuns.map((run) => run.id),
+    ["run-43"]
+  );
 });
 
 test("the application exposes sources and fetches a selected season on demand", async () => {
