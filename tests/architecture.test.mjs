@@ -73,10 +73,14 @@ test("the application falls back to the next run repository", async () => {
   assert.equal(saved.length, 1);
 });
 
-test("the folder repository loads and joins every run collection in its manifest", async () => {
+test("the folder repository loads only the newest run collection by default", async () => {
   const requested = [];
+  const sources = [
+    { file: "AA/4.4.json", endgame: "Anomaly Arbitration", version: "4.4", updatedAt: "2026-07-16" },
+    { file: "AA/4.3.json", endgame: "Anomaly Arbitration", version: "4.3", updatedAt: "2026-07-15" },
+  ];
   const payloads = new Map([
-    ["https://example.test/scrapped/index.json", { files: ["AA/4.3.json", "AA/4.4.json"] }],
+    ["https://example.test/scrapped/index.json", { sources }],
     ["https://example.test/scrapped/AA/4.3.json", { items: [makeRawRun("run-43")], count: 1 }],
     ["https://example.test/scrapped/AA/4.4.json", { items: [makeRawRun("run-44")], count: 1 }],
   ]);
@@ -95,11 +99,43 @@ test("the folder repository loads and joins every run collection in its manifest
 
   const runs = await repository.load();
 
-  assert.deepEqual(
-    runs.map((run) => run.id),
-    ["run-43", "run-44"]
-  );
-  assert.deepEqual(requested, [...payloads.keys()]);
+  assert.deepEqual(runs.map((run) => run.id), ["run-44"]);
+  assert.deepEqual(requested, [
+    "https://example.test/scrapped/index.json",
+    "https://example.test/scrapped/AA/4.4.json",
+  ]);
+
+  const olderRuns = await repository.loadSource(sources[1]);
+  assert.deepEqual(olderRuns.map((run) => run.id), ["run-43"]);
+});
+
+test("the application exposes sources and fetches a selected season on demand", async () => {
+  const sources = [
+    { file: "AA/4.4.json", endgame: "Anomaly Arbitration", version: "4.4", updatedAt: "2026-07-16" },
+    { file: "AA/4.3.json", endgame: "Anomaly Arbitration", version: "4.3", updatedAt: "2026-07-15" },
+  ];
+  const loaded = [];
+  const repository = {
+    list: async () => sources,
+    load: async () => [makeRawRun("run-44")],
+    loadSource: async (source) => {
+      loaded.push(source.file);
+      return [makeRawRun(source.version === "4.3" ? "run-43" : "run-44")];
+    },
+  };
+  const inventoryRepository = {
+    load: () => ({ characters: new Map(), lightCones: new Map() }),
+    save: () => {},
+  };
+  const store = new AppStore();
+  const application = new HertaApplication(store, inventoryRepository, [repository]);
+
+  await application.initialize();
+  await application.selectRunSource("Anomaly Arbitration", "4.3");
+
+  assert.deepEqual(loaded, ["AA/4.4.json", "AA/4.3.json"]);
+  assert.equal(store.snapshot.filters.version, "4.3");
+  assert.equal(store.snapshot.runs[0].id, "run-43");
 });
 
 test("inventory commands persist a new collection without mutating prior state", async () => {

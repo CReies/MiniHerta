@@ -1,5 +1,5 @@
-import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
-import { dirname, join, relative } from "node:path";
+import { mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
+import { basename, dirname, join, relative } from "node:path";
 import { fileURLToPath } from "node:url";
 import { stripTypeScriptTypes } from "node:module";
 
@@ -12,7 +12,7 @@ const sources = await collectSources(srcRoot);
 const runSources = await collectRunSources(scrappedRoot);
 
 await rm(outRoot, { recursive: true, force: true });
-await writeFile(join(scrappedRoot, "index.json"), `${JSON.stringify({ files: runSources }, null, 2)}\n`, "utf8");
+await writeFile(join(scrappedRoot, "index.json"), `${JSON.stringify({ sources: runSources }, null, 2)}\n`, "utf8");
 console.log(`scrapped/index.json (${runSources.length} fuentes)`);
 
 for (const source of sources) {
@@ -45,8 +45,21 @@ async function collectRunSources(directory) {
       const absolutePath = join(directory, entry.name);
       if (entry.isDirectory()) return collectRunSources(absolutePath);
       if (!entry.isFile() || !entry.name.endsWith(".json") || entry.name === "index.json") return [];
-      return [relative(scrappedRoot, absolutePath).replaceAll("\\", "/")];
+      const payload = JSON.parse(await readFile(absolutePath, "utf8"));
+      const firstRun = (Array.isArray(payload) ? payload : payload.items)?.[0] ?? {};
+      const data = firstRun.data ?? {};
+      const fileStat = await stat(absolutePath);
+      return [{
+        file: relative(scrappedRoot, absolutePath).replaceAll("\\", "/"),
+        endgame: String(data.mode ?? firstRun.mode ?? relative(scrappedRoot, dirname(absolutePath))),
+        version: String(data.season ?? firstRun.season ?? basename(entry.name, ".json")),
+        updatedAt: fileStat.mtime.toISOString(),
+      }];
     })
   );
-  return nested.flat().sort();
+  return nested.flat().sort((a, b) =>
+    b.updatedAt.localeCompare(a.updatedAt) ||
+    b.version.localeCompare(a.version, undefined, { numeric: true }) ||
+    a.file.localeCompare(b.file)
+  );
 }

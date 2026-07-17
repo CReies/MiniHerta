@@ -2,7 +2,7 @@
 
 Aplicacion local para cruzar runs 0-cycle de Honkai: Star Rail contra tu inventario real de personajes, eidolons, light cones y superimposiciones.
 
-La app carga todas las colecciones JSON de `scrapped/`, permite importar/exportar inventario, calcula equipos posibles y ordena equipos cercanos con un scoring ponderado por dificultad de obtener personajes/conos.
+La app carga inicialmente la colección más recientemente actualizada de `scrapped/` y solicita las demás bajo demanda al cambiar el endgame o la versión. También permite importar/exportar inventario, calcula equipos posibles y ordena equipos cercanos con un scoring ponderado por dificultad de obtener personajes/conos.
 
 ## Quick Start
 

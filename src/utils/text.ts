@@ -14,9 +14,13 @@ export function escapeHtml(value: unknown): string {
     .replaceAll("'", "&#039;");
 }
 
-export function formatDate(value: string): string {
-  if (!value) return "sin fecha";
+export function formatDate(value: string, locale = "en"): string {
+  if (!value) return locale === "es" ? "sin fecha" : "no date";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return value;
-  return date.toLocaleDateString("es-CO", { year: "numeric", month: "short", day: "numeric" });
+  return date.toLocaleDateString(locale === "es" ? "es-CO" : "en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 }

@@ -1,8 +1,9 @@
-import { itemImageUrl, type ItemCatalog } from "../domain/catalog.js";
+import { itemImageUrl, itemLabel, type ItemCatalog } from "../domain/catalog.js";
 import { nearScoreLimit } from "../domain/scoring.js";
 import type { EvaluatedRun, Run } from "../domain/types.js";
 import { escapeHtml, formatDate } from "../utils/text.js";
 import type { Elements } from "./dom.js";
+import { t, type Locale } from "../i18n.js";
 
 type RunStatus = "possible" | "near" | "blocked";
 type IconName =
@@ -24,14 +25,15 @@ export function renderResults(
   visible: EvaluatedRun[],
   catalog: ItemCatalog,
   limit = 24,
-  onShowMore?: () => void
+  onShowMore?: () => void,
+  locale: Locale = "en"
 ): void {
   const counts = resultCounts(evaluated);
 
   els.possibleCount.textContent = String(counts.possible);
   els.nearCount.textContent = String(counts.near);
   els.runCount.textContent = String(evaluated.length);
-  els.results.innerHTML = renderVisibleRuns(visible, catalog, limit);
+  els.results.innerHTML = renderVisibleRuns(visible, catalog, limit, locale);
   els.results.querySelector<HTMLButtonElement>("[data-show-more]")?.addEventListener("click", () => onShowMore?.());
 }
 
@@ -42,56 +44,56 @@ function resultCounts(runs: EvaluatedRun[]): { possible: number; near: number } 
   };
 }
 
-function renderVisibleRuns(runs: EvaluatedRun[], catalog: ItemCatalog, limit: number): string {
+function renderVisibleRuns(runs: EvaluatedRun[], catalog: ItemCatalog, limit: number, locale: Locale): string {
   if (!runs.length) {
     return `
       <div class="empty">
         <span class="empty-icon" aria-hidden="true">${svgIcon("search")}</span>
-        <strong>No encontramos equipos</strong>
-        <span>Prueba con otro boss, cambia el criterio de light cones o limpia la búsqueda.</span>
+        <strong>${t("results.emptyTitle")}</strong>
+        <span>${t("results.emptyBody")}</span>
       </div>
     `;
   }
 
   const rendered = runs
     .slice(0, limit)
-    .map((run) => renderRunCard(run, catalog))
+    .map((run) => renderRunCard(run, catalog, locale))
     .join("");
   const remaining = runs.length - limit;
   if (remaining <= 0) return rendered;
 
   return `${rendered}
     <div class="results-more">
-      <p>Mostrando ${Math.min(limit, runs.length)} de ${runs.length} equipos</p>
+      <p>${t("results.showing", { shown: Math.min(limit, runs.length), total: runs.length })}</p>
       <button class="button button--secondary" type="button" data-show-more>
-        Mostrar ${Math.min(24, remaining)} más
+        ${t("results.showMore", { count: Math.min(24, remaining) })}
       </button>
     </div>`;
 }
 
-function renderRunCard(run: EvaluatedRun, catalog: ItemCatalog): string {
+function renderRunCard(run: EvaluatedRun, catalog: ItemCatalog, locale: Locale): string {
   const status = runStatus(run);
 
   return `
     <article class="run-card ${status === "possible" ? "" : status}">
       <div class="run-header">
         <div class="run-heading">
-          <h3>${escapeHtml(teamTitle(run))}</h3>
+          <h3>${escapeHtml(teamTitle(run, catalog, locale))}</h3>
           <div class="run-meta">
             <span>${svgIcon("shield")}${escapeHtml(run.boss)}</span>
             <span>${svgIcon("user")}${escapeHtml(run.author)}</span>
-            <span>${svgIcon("calendar")}${formatDate(run.videoDate)}</span>
-            <span class="run-cost">${svgIcon("star")}<strong>${run.limitedCost}</strong> cost</span>
+            <span>${svgIcon("calendar")}${formatDate(run.videoDate, locale)}</span>
+            <span class="run-cost">${svgIcon("star")}<strong>${run.limitedCost}</strong> ${t("results.cost")}</span>
           </div>
         </div>
         <span class="badge ${status === "possible" ? "" : status}">${statusIcon(status)}${escapeHtml(statusLabel(status, run))}</span>
       </div>
       <div class="team-grid">
-        ${run.team.map((member) => renderMember(member, catalog)).join("")}
+        ${run.team.map((member) => renderMember(member, catalog, locale)).join("")}
       </div>
-      ${renderMissingSection(run, catalog)}
+      ${renderMissingSection(run, catalog, locale)}
       <div class="run-actions">
-        ${run.videoUrl ? `<a class="button button--secondary" href="${escapeHtml(run.videoUrl)}" target="_blank" rel="noreferrer">${svgIcon("play")}Ver run</a>` : "<span></span>"}
+        ${run.videoUrl ? `<a class="button button--secondary" href="${escapeHtml(run.videoUrl)}" target="_blank" rel="noreferrer">${svgIcon("play")}${t("results.viewRun")}</a>` : "<span></span>"}
         <span class="run-id">${svgIcon("hash")}ID ${escapeHtml(run.id)}</span>
       </div>
     </article>
@@ -104,9 +106,9 @@ function runStatus(run: EvaluatedRun): RunStatus {
 }
 
 function statusLabel(status: RunStatus, run: EvaluatedRun): string {
-  if (status === "possible") return "Listo para jugar";
-  if (status === "near") return `${run.missingScore} pts para completar`;
-  return `${run.missingScore} pts faltantes`;
+  if (status === "possible") return t("results.ready");
+  if (status === "near") return t("results.nearStatus", { score: run.missingScore });
+  return t("results.blockedStatus", { score: run.missingScore });
 }
 
 function statusIcon(status: RunStatus): string {
@@ -115,56 +117,59 @@ function statusIcon(status: RunStatus): string {
   return svgIcon("alert");
 }
 
-function teamTitle(run: Run): string {
-  return run.team.map((member) => member.char).join(" · ");
+function teamTitle(run: Run, catalog: ItemCatalog, locale: Locale): string {
+  return run.team.map((member) => itemLabel(catalog, "character", member.char, locale)).join(" · ");
 }
 
-function renderMember(member: Run["team"][number], catalog: ItemCatalog): string {
+function renderMember(member: Run["team"][number], catalog: ItemCatalog, locale: Locale): string {
   const characterImage = escapeHtml(itemImageUrl(catalog, "character", member.char));
-  const lightConeLabel = member.lc ? `${member.lc} · S${member.superimp}` : "Sin light cone";
+  const characterLabel = itemLabel(catalog, "character", member.char, locale);
+  const lightConeName = member.lc ? itemLabel(catalog, "lightCone", member.lc, locale) : "";
+  const lightConeLabel = member.lc ? `${lightConeName} · S${member.superimp}` : t("results.noCone");
 
   return `
     <div class="member">
       <div class="member-media">
-        <img src="${characterImage}" alt="${escapeHtml(member.char)}" loading="lazy" onerror="this.hidden=true" />
+        <img src="${characterImage}" alt="${escapeHtml(characterLabel)}" loading="lazy" onerror="this.hidden=true" />
         <span class="member-level">E${member.eidolon}</span>
-        ${renderLightConeImage(member, catalog)}
+        ${renderLightConeImage(member, catalog, locale)}
       </div>
       <div class="member-copy">
-        <strong>${escapeHtml(member.char)}</strong>
+        <strong>${escapeHtml(characterLabel)}</strong>
         <span>${escapeHtml(lightConeLabel)}</span>
       </div>
     </div>
   `;
 }
 
-function renderLightConeImage(member: Run["team"][number], catalog: ItemCatalog): string {
+function renderLightConeImage(member: Run["team"][number], catalog: ItemCatalog, locale: Locale): string {
   if (!member.lc) return "";
   const imageUrl = escapeHtml(itemImageUrl(catalog, "lightCone", member.lc));
-  return `<img class="lc-image" src="${imageUrl}" alt="${escapeHtml(member.lc)}" loading="lazy" onerror="this.hidden=true" />`;
+  return `<img class="lc-image" src="${imageUrl}" alt="${escapeHtml(itemLabel(catalog, "lightCone", member.lc, locale))}" loading="lazy" onerror="this.hidden=true" />`;
 }
 
-function renderMissingSection(run: EvaluatedRun, catalog: ItemCatalog): string {
+function renderMissingSection(run: EvaluatedRun, catalog: ItemCatalog, locale: Locale): string {
   if (!run.missing.length) return "";
   return `
     <div class="missing-section">
-      <p class="missing-heading">${svgIcon("package")}Necesitas añadir</p>
-      <div class="missing-list">${run.missing.map((item) => renderMissingChip(item, catalog)).join("")}</div>
+      <p class="missing-heading">${svgIcon("package")}${t("results.needAdd")}</p>
+      <div class="missing-list">${run.missing.map((item) => renderMissingChip(item, catalog, locale)).join("")}</div>
     </div>
   `;
 }
 
-function renderMissingChip(item: EvaluatedRun["missing"][number], catalog: ItemCatalog): string {
-  const kind = item.kind === "character" ? "Personaje" : "Light cone";
-  const action = item.isUpgrade ? "mejora" : "nuevo";
+function renderMissingChip(item: EvaluatedRun["missing"][number], catalog: ItemCatalog, locale: Locale): string {
+  const kind = item.kind === "character" ? t("results.character") : t("filters.lightCones");
+  const action = t(item.isUpgrade ? "results.upgrade" : "results.new");
   const imageUrl = escapeHtml(itemImageUrl(catalog, item.kind, item.name));
+  const displayLabel = itemLabel(catalog, item.kind, item.name, locale);
   const details = `${kind} ${item.rarity}★ · ${action} · ${item.score} pts`;
 
   return `
     <span class="missing-chip" title="${escapeHtml(details)}">
       <img src="${imageUrl}" alt="" loading="lazy" onerror="this.hidden=true" />
       <span>
-        <strong>${escapeHtml(item.label)}</strong>
+        <strong>${escapeHtml(displayLabel)}</strong>
         <small>${escapeHtml(details)}</small>
       </span>
     </span>

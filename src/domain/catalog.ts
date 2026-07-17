@@ -1,4 +1,5 @@
 import { characterAssets, lightConeAssets } from "../generated/assets.js";
+import { spanishCharacterNames, spanishLightConeNames } from "../data/spanish-item-names.js";
 import type { ItemKind, Rarity, Run } from "./types.js";
 
 export type Locale = "en" | "es";
@@ -119,13 +120,19 @@ function collectRunItems(runs: Run[], kind: ItemKind): CatalogItem[] {
 }
 
 function createCatalogItem(kind: ItemKind, name: string): CatalogItem {
+  const spanishNames = kind === "character" ? spanishCharacterNames : spanishLightConeNames;
   return {
     kind,
     name,
-    labels: { en: name },
+    labels: { en: name, es: spanishNames[name] ?? name },
     rarity: inferRarity(kind, name),
     assetUrl: assetUrl(kind, name),
   };
+}
+
+export function itemLabel(catalog: ItemCatalog, kind: ItemKind, name: string, locale: Locale): string {
+  const item = findCatalogItem(catalog, kind, name);
+  return item.labels[locale] ?? item.labels.en;
 }
 
 function inferRarity(kind: ItemKind, name: string): Rarity {
