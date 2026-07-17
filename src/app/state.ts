@@ -1,7 +1,8 @@
-import { catalogNames, createCatalogFromRuns, type ItemCatalog } from "../domain/catalog.js";
-import { createEmptyInventory, reconcileInventory } from "../domain/inventory.js";
+import { createCatalogFromRuns, type ItemCatalog } from "../domain/catalog.js";
+import { createEmptyInventory } from "../domain/inventory.js";
 import { normalizeRuns } from "../domain/normalize.js";
 import type { FilterState, Inventory, ItemKind, RawRun, Run } from "../domain/types.js";
+import type { RunSource } from "./ports.js";
 
 export type AppStatus = "idle" | "loading" | "ready" | "error";
 
@@ -12,6 +13,7 @@ export interface InventorySearchState {
 
 export interface AppState {
   runs: Run[];
+  runSources: RunSource[];
   catalog: ItemCatalog;
   inventory: Inventory;
   filters: FilterState;
@@ -38,6 +40,7 @@ export class AppStore {
   constructor(inventory: Inventory = createEmptyInventory()) {
     this.state = {
       runs: [],
+      runSources: [],
       catalog: { characters: [], lightCones: [] },
       inventory: cloneInventory(inventory),
       filters: { ...defaultFilters },
@@ -61,8 +64,6 @@ export class AppStore {
     const runs = normalizeRuns(rawRuns);
     const catalog = createCatalogFromRuns(runs);
     const inventory = cloneInventory(this.state.inventory);
-    const names = catalogNames(catalog);
-    reconcileInventory(inventory, names.characters, names.lightCones);
     const availableEndgames = new Set(runs.map((run) => run.endgame));
     const availableVersions = new Set(runs.map((run) => run.version));
     const endgame =
@@ -74,6 +75,10 @@ export class AppStore {
       : latestVersion(availableVersions);
 
     this.commit({ ...this.state, runs, catalog, inventory, filters: { ...this.state.filters, endgame, version } });
+  }
+
+  replaceRunSources(runSources: RunSource[]): void {
+    this.commit({ ...this.state, runSources: [...runSources] });
   }
 
   replaceInventory(inventory: Inventory): void {

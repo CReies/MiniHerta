@@ -133,7 +133,7 @@ pnpm build
 Verificar manualmente:
 
 - La pagina abre.
-- `scrapped/index.json` carga todas las colecciones de la carpeta.
+- `scrapped/index.json` indexa las colecciones; el cliente carga la más reciente y solicita las demás al cambiar filtros.
 - Importar inventario funciona.
 - Exportar inventario descarga JSON.
 - Modo oscuro persiste.

@@ -28,6 +28,7 @@ export function serve() {
       const fileStat = await stat(filePath);
 
       response.writeHead(200, {
+        "Cache-Control": cacheControl(filePath),
         "Content-Length": fileStat.size,
         "Content-Type": mimeTypes[extname(filePath)] || "application/octet-stream",
       });
@@ -53,6 +54,12 @@ export function serve() {
   });
 
   return server;
+}
+
+function cacheControl(filePath) {
+  const relativePath = relative(root, filePath).replaceAll("\\", "/");
+  if (relativePath.startsWith("assets/")) return "public, max-age=86400";
+  return "no-cache";
 }
 
 async function resolveFilePath(rawUrl) {
