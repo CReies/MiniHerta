@@ -12,20 +12,27 @@
     "assets:download": "node scripts/download-assets.mjs",
     "assets:optimize": "node scripts/optimize-assets.mjs",
     "typecheck": "tsc --noEmit",
-    "check": "pnpm typecheck",
-    "test": "pnpm build && node --test",
+    "typecheck:scripts": "tsc --project tsconfig.scripts.json",
+    "astro:check": "astro check",
+    "check": "pnpm typecheck && pnpm typecheck:scripts && pnpm astro:check && pnpm lint && pnpm test && pnpm format:check",
+    "test": "node scripts/build-test-modules.mjs && node --test",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "astro": "astro"
   },
+  "engines": {
+    "node": ">=22.12.0",
+    "pnpm": ">=11"
+  },
+  "packageManager": "pnpm@11.0.0",
   "dependencies": {
-    "astro": "^6.4.6",
-    "zod": "^4.4.3"
+    "astro": "^6.4.6"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
     "@eslint/js": "^10.0.1",
+    "@types/node": "^22.20.1",
     "eslint": "^10.5.0",
     "eslint-plugin-astro": "^1.7.0",
     "prettier": "^3.8.4",

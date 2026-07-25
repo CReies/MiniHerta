@@ -1,0 +1,25 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ApplicationHeader from "../ui/application-shell/ApplicationHeader.astro";
+import HeroBanner from "../ui/application-shell/HeroBanner.astro";
+import InventoryTemplates from "../ui/inventory/InventoryTemplates.astro";
+import InventoryView from "../ui/inventory/InventoryView.astro";
+import TeamFinderView from "../ui/run-list/TeamFinderView.astro";
+
+const description = "Find Honkai: Star Rail 0-cycle teams compatible with your characters and Light Cones.";
+---
+
+<BaseLayout title="0-Cycle Team Finder" {description}>
+  <ApplicationHeader />
+  <HeroBanner />
+  <main id="mainContent" class="view-stage" tabindex="-1">
+    <h1 class="sr-only" data-i18n="meta.title">0-Cycle Team Finder</h1>
+    <div id="appStatus" class="app-status panel" role="status" aria-live="polite" hidden></div>
+    <InventoryView />
+    <TeamFinderView />
+  </main>
+  <InventoryTemplates />
+  <script>
+    import "../main";
+  </script>
+</BaseLayout>

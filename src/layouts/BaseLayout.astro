@@ -1,0 +1,41 @@
+---
+import "../../styles.css";
+
+interface Props {
+  description: string;
+  title: string;
+}
+
+const { description, title } = Astro.props;
+const canonicalUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site) : undefined;
+---
+
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#0e0d16" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="description" content={description} />
+    <meta property="og:description" content={description} />
+    <meta property="og:title" content={title} />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:title" content={title} />
+    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+    <title>{title}</title>
+    <link
+      rel="preload"
+      as="image"
+      href="assets/bosses/murata-graphia-banner-800.webp"
+      imagesrcset="assets/bosses/murata-graphia-banner-800.webp 800w, assets/bosses/murata-graphia-banner.webp 1600w"
+      imagesizes="(max-width: 800px) calc(100vw - 24px), min(calc(100vw - 48px), 1480px)"
+      type="image/webp"
+    />
+  </head>
+  <body>
+    <slot />
+  </body>
+</html>

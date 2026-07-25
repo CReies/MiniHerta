@@ -1,9 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { selectResults } from "../dist/app/results.js";
-import { AppStore } from "../dist/app/state.js";
-import { createCatalogFromRuns, itemLabel } from "../dist/domain/catalog.js";
+import { AppStore } from "../.test-dist/app/application-state/app-store.js";
+import { selectResults } from "../.test-dist/app/results/select-results.js";
+import { createCatalogFromRuns } from "../.test-dist/domain/catalog/create-catalog.js";
+import { itemLabel } from "../.test-dist/ui/items/item-presentation.js";
+import { localizedRunSearchText } from "../.test-dist/ui/items/item-search.js";
 
 test("catalog exposes Spanish character and Light Cone labels without changing canonical names", () => {
   const catalog = createCatalogFromRuns([
@@ -13,8 +15,9 @@ test("catalog exposes Spanish character and Light Cone labels without changing c
   ]);
 
   assert.equal(catalog.characters[0].name, "Firefly");
-  assert.equal(itemLabel(catalog, "character", "Firefly", "es"), "Luciérnaga");
-  assert.equal(itemLabel(catalog, "lightCone", "Good Night and Sleep Well", "es"), "Buenas noches, que duermas bien");
+  assert.equal(catalog.itemsByKind.character.get("Firefly"), catalog.characters[0]);
+  assert.equal(itemLabel("character", "Firefly", "es"), "Luciérnaga");
+  assert.equal(itemLabel("lightCone", "Good Night and Sleep Well", "es"), "Buenas noches, que duermas bien");
 });
 
 test("result search accepts localized Spanish item names", () => {
@@ -38,5 +41,5 @@ test("result search accepts localized Spanish item names", () => {
   ]);
 
   const filters = { ...store.snapshot.filters, resultSearch: "luciernaga" };
-  assert.equal(selectResults(store.snapshot, filters).visible.length, 1);
+  assert.equal(selectResults(store.snapshot, filters, localizedRunSearchText).visible.length, 1);
 });

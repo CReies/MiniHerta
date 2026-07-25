@@ -1,12 +1,16 @@
 export class BrowserJsonFileGateway {
-  async readFromEvent<T>(event: Event): Promise<T | null> {
-    const input = event.target as HTMLInputElement;
+  async readFromEvent(event: Event): Promise<unknown | null> {
+    const input = event.target;
+    if (!(input instanceof HTMLInputElement)) {
+      throw new TypeError("JSON file input event must come from an HTML input element");
+    }
     const file = input.files?.[0];
     if (!file) return null;
 
     try {
       const contents = await readFile(file);
-      return JSON.parse(contents) as T;
+      const payload: unknown = JSON.parse(contents);
+      return payload;
     } finally {
       input.value = "";
     }

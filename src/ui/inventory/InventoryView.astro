@@ -1,0 +1,96 @@
+<section id="inventoryView" class="view-page" data-view="inventario" aria-labelledby="inventoryHeading" hidden>
+  <div class="panel inventory-panel inventory-panel--standalone">
+    <div class="inventory-header">
+      <span class="section-icon" aria-hidden="true">
+        <svg class="icon" viewBox="0 0 24 24">
+          <path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5v-9Z"></path>
+          <path d="m4.5 7.5 7.5 4.2 7.5-4.2M12 12v9"></path>
+        </svg>
+      </span>
+      <div class="inventory-title">
+        <p class="eyebrow" data-i18n="inventory.eyebrow">Your collection</p>
+        <h2 id="inventoryHeading" data-i18n="inventory.title">Inventory</h2>
+        <p data-i18n="inventory.subtitle">
+          Build your account and review the Light Cones most often used with each character.
+        </p>
+      </div>
+      <div class="inventory-actions">
+        <label class="button button--primary import-button">
+          <input id="inventoryFile" class="sr-only" type="file" accept="application/json" />
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5"></path>
+            <path d="M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"></path>
+          </svg>
+          <span data-i18n="actions.import">Import</span>
+        </label>
+        <button id="exportInventory" class="button button--secondary" type="button">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 4v12m0 0 4.5-4.5M12 16l-4.5-4.5"></path>
+            <path d="M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"></path>
+          </svg>
+          <span data-i18n="actions.export">Export</span>
+        </button>
+        <button id="resetBuild" class="button button--ghost" type="button">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 12a8 8 0 1 0 2.35-5.65L4 8.7"></path>
+            <path d="M4 4v4.7h4.7"></path>
+          </svg>
+          <span data-i18n="actions.reset">Reset</span>
+        </button>
+      </div>
+    </div>
+
+    <section class="inventory-section inventory-section--characters">
+      <div class="section-heading">
+        <div class="section-copy">
+          <p class="eyebrow" data-i18n="inventory.charactersEyebrow">Characters and frequent builds</p>
+          <h3 data-i18n="inventory.characters">Characters</h3>
+          <p id="characterCount">0 on your account</p>
+        </div>
+        <label class="search-box">
+          <span class="sr-only" data-i18n="inventory.characterSearchLabel"
+            >Search for a character or recommended Light Cone</span
+          >
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="6.5"></circle>
+            <path d="m16 16 4 4"></path>
+          </svg>
+          <input
+            id="characterSearch"
+            type="search"
+            placeholder="Search character or Light Cone"
+            data-i18n-placeholder="inventory.characterSearch"
+          />
+        </label>
+      </div>
+      <div id="characters" class="inventory-list character-grid"></div>
+    </section>
+
+    <section class="inventory-section inventory-section--light-cones">
+      <div class="section-heading">
+        <div class="section-copy">
+          <p class="eyebrow" data-i18n="inventory.otherEyebrow">Outside the recommendations</p>
+          <h3 data-i18n="inventory.otherCones">Other Light Cones</h3>
+          <p id="lightConeCount">0 on your account</p>
+        </div>
+        <label class="search-box">
+          <span class="sr-only" data-i18n="inventory.coneSearchLabel">Search for another Light Cone</span>
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+            <circle cx="11" cy="11" r="6.5"></circle>
+            <path d="m16 16 4 4"></path>
+          </svg>
+          <input
+            id="lightConeSearch"
+            type="search"
+            placeholder="Search other Light Cones"
+            data-i18n-placeholder="inventory.coneSearch"
+          />
+        </label>
+      </div>
+      <p class="inventory-note" data-i18n="inventory.note">
+        Each character's three most used Light Cones are inside their card. Only the rest appear here.
+      </p>
+      <div id="lightCones" class="inventory-list light-cone-grid"></div>
+    </section>
+  </div>
+</section>

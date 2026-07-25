@@ -1,13 +1,17 @@
+// @ts-check
+
 import { createReadStream, existsSync } from "node:fs";
 import { stat } from "node:fs/promises";
 import { createServer } from "node:http";
 import { extname, join, normalize, relative } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-const root = fileURLToPath(new URL("../", import.meta.url));
+const projectRoot = fileURLToPath(new URL("../", import.meta.url));
+const root = join(projectRoot, "dist");
 const port = Number(process.env.PORT || 8000);
 const host = process.env.HOST || "127.0.0.1";
 
+/** @type {Readonly<Record<string, string>>} */
 const mimeTypes = {
   ".css": "text/css; charset=utf-8",
   ".html": "text/html; charset=utf-8",
@@ -34,7 +38,7 @@ export function serve() {
       });
       createReadStream(filePath).pipe(response);
     } catch (error) {
-      const status = error?.code === "ENOENT" ? 404 : 500;
+      const status = errorCode(error) === "ENOENT" ? 404 : 500;
       response.writeHead(status, { "Content-Type": "text/plain; charset=utf-8" });
       response.end(status === 404 ? "Not found" : "Server error");
     }
@@ -45,7 +49,7 @@ export function serve() {
   });
 
   server.on("error", (error) => {
-    if (error.code === "EADDRINUSE") {
+    if (errorCode(error) === "EADDRINUSE") {
       console.error(`Port ${port} is already in use. Try PORT=8123 pnpm start.`);
     } else {
       console.error(error);
@@ -56,12 +60,21 @@ export function serve() {
   return server;
 }
 
+/**
+ * @param {string} filePath
+ * @returns {string}
+ */
 function cacheControl(filePath) {
   const relativePath = relative(root, filePath).replaceAll("\\", "/");
+  if (relativePath.startsWith("_astro/")) return "public, max-age=31536000, immutable";
   if (relativePath.startsWith("assets/")) return "public, max-age=86400";
   return "no-cache";
 }
 
+/**
+ * @param {string} rawUrl
+ * @returns {Promise<string>}
+ */
 async function resolveFilePath(rawUrl) {
   const url = new URL(rawUrl, `http://${host}:${port}`);
   const pathname = decodeURIComponent(url.pathname);
@@ -70,18 +83,33 @@ async function resolveFilePath(rawUrl) {
   const filePath = join(root, normalized);
 
   if (relative(root, filePath).startsWith("..")) {
-    const error = new Error("Forbidden");
-    error.code = "ENOENT";
-    throw error;
+    throw notFoundError("Forbidden");
   }
 
   if (!existsSync(filePath)) {
-    const error = new Error("Not found");
-    error.code = "ENOENT";
-    throw error;
+    throw notFoundError("Not found");
   }
 
   return filePath;
+}
+
+/**
+ * @param {string} message
+ * @returns {NodeJS.ErrnoException}
+ */
+function notFoundError(message) {
+  const error = /** @type {NodeJS.ErrnoException} */ (new Error(message));
+  error.code = "ENOENT";
+  return error;
+}
+
+/**
+ * @param {unknown} error
+ * @returns {string | undefined}
+ */
+function errorCode(error) {
+  if (!error || typeof error !== "object" || !("code" in error)) return undefined;
+  return typeof error.code === "string" ? error.code : undefined;
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

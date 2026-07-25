@@ -1,0 +1,61 @@
+<template id="characterCardTemplate">
+  <article class="character-card">
+    <label class="character-card__portrait">
+      <input class="owned-input" type="checkbox" />
+      <span class="inventory-image-wrap"><img class="inventory-image" alt="" loading="lazy" /></span>
+      <span class="owned-chip"
+        ><span class="owned-chip__check">✓</span><span data-owned-label data-i18n="card.owned">Owned</span></span
+      >
+    </label>
+    <div class="character-card__content">
+      <header class="character-card__header">
+        <div>
+          <p class="card-kicker" data-i18n="card.character">Character</p>
+          <h4 class="name"></h4>
+        </div>
+        <span class="rarity-badge"></span>
+      </header>
+      <div class="level-editor">
+        <span class="level-editor__label" data-i18n="level.eidolon">Eidolon</span>
+        <div class="level-stepper">
+          <button class="stepper-button" data-step="decrement" type="button">−</button>
+          <label class="level-select"
+            ><span class="sr-only" data-i18n="level.eidolon">Eidolon</span><select></select></label
+          >
+          <button class="stepper-button" data-step="increment" type="button">+</button>
+        </div>
+      </div>
+      <section class="character-recommendations">
+        <div class="recommendation-heading">
+          <span data-i18n="card.topCones">Most used Light Cones</span>
+          <small data-i18n="card.topRuns">Top 3 in runs</small>
+        </div>
+        <div class="recommended-cone-list"></div>
+      </section>
+    </div>
+  </article>
+</template>
+
+<template id="lightConeCardTemplate">
+  <article class="light-cone-card">
+    <label class="light-cone-card__ownership">
+      <input class="owned-input" type="checkbox" />
+      <span class="light-cone-image-wrap"><img class="inventory-image" alt="" loading="lazy" /></span>
+      <span class="cone-owned-check" aria-hidden="true">✓</span>
+      <span class="recommendation-rank"></span>
+    </label>
+    <div class="light-cone-card__body">
+      <div class="light-cone-card__copy">
+        <span class="name"></span>
+        <small class="usage-count"></small>
+      </div>
+      <div class="level-stepper level-stepper--compact">
+        <button class="stepper-button" data-step="decrement" type="button">−</button>
+        <label class="level-select"
+          ><span class="sr-only" data-i18n="level.superimposition">Superimposition</span><select></select></label
+        >
+        <button class="stepper-button" data-step="increment" type="button">+</button>
+      </div>
+    </div>
+  </article>
+</template>

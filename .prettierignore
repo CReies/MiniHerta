@@ -1,7 +1,9 @@
 dist
 node_modules
-runs
+/runs
 banner-data/cleaned
 banner-data/*.json
 scrapped.json
 pnpm-lock.yaml
+src/data/spanish-item-names.ts
+src/generated/assets.ts

@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { mostUsedLightConesByCharacter } from "../dist/domain/light-cone-usage.js";
+import { mostUsedLightConesByCharacter } from "../.test-dist/domain/runs/light-cone-usage.js";
 
 function makeRun(id, lightCones) {
   return {
