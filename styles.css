@@ -81,8 +81,9 @@ select,
 button:focus-visible,
 input:focus-visible,
 select:focus-visible,
+a:focus-visible,
 .button:focus-visible {
-  outline: 3px solid rgba(155, 148, 244, 0.38);
+  outline: 3px solid var(--accent-bright);
   outline-offset: 2px;
 }
 
@@ -125,6 +126,25 @@ h3 {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+.skip-link {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 100;
+  padding: 9px 13px;
+  border-radius: 10px;
+  background: var(--ink);
+  color: var(--bg);
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  transform: translateY(calc(-100% - 12px));
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
 }
 
 .topbar {
@@ -306,8 +326,9 @@ button:hover {
   min-width: 42px;
 }
 
-.import-button input {
-  display: none;
+.import-button:focus-within {
+  outline: 3px solid var(--accent-bright);
+  outline-offset: 2px;
 }
 
 .hero {
@@ -344,6 +365,19 @@ button:hover {
   max-width: 1480px;
   margin: 0 auto;
   padding: 24px 0 48px;
+}
+
+.app-status {
+  margin-bottom: 18px;
+  padding: 14px 18px;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.app-status[data-status="error"] {
+  border-color: rgba(255, 115, 135, 0.38);
+  color: var(--bad);
 }
 
 .view-page[hidden] {
@@ -550,6 +584,16 @@ select option {
   height: 1px;
   opacity: 0;
   pointer-events: none;
+}
+
+.owned-input:focus-visible {
+  outline: 0;
+}
+
+.character-card:has(.owned-input:focus-visible),
+.light-cone-card:has(.owned-input:focus-visible) {
+  outline: 3px solid rgba(155, 148, 244, 0.72);
+  outline-offset: 2px;
 }
 
 .character-card__portrait .inventory-image-wrap {

@@ -16,37 +16,32 @@ export interface RawRun {
   [key: string]: unknown;
 }
 
-export interface RawRunCollection {
-  items: RawRun[];
-  count?: number;
-}
-
 export interface TeamMember {
-  slot: number;
-  char: string;
-  eidolon: number;
-  lc: string;
-  superimp: number;
+  readonly slot: number;
+  readonly char: string;
+  readonly eidolon: number;
+  readonly lc: string;
+  readonly superimp: number;
 }
 
 export interface Run {
-  id: string;
-  author: string;
-  boss: string;
-  endgame: string;
-  version: string;
-  videoUrl: string;
-  videoDate: string;
-  subcategory: string;
-  metricValue: number;
-  limitedCost: number;
-  standardCost: number;
-  team: TeamMember[];
+  readonly id: string;
+  readonly author: string;
+  readonly boss: string;
+  readonly endgame: string;
+  readonly version: string;
+  readonly videoUrl: string;
+  readonly videoDate: string;
+  readonly subcategory: string;
+  readonly metricValue: number;
+  readonly limitedCost: number;
+  readonly standardCost: number;
+  readonly team: readonly TeamMember[];
 }
 
 export interface Inventory {
-  characters: Map<string, number>;
-  lightCones: Map<string, number>;
+  readonly characters: ReadonlyMap<string, number>;
+  readonly lightCones: ReadonlyMap<string, number>;
 }
 
 export interface SerializedInventory {
@@ -76,10 +71,10 @@ export interface EvaluatedRun extends Run {
 }
 
 export interface FilterState {
-  endgame: string;
-  version: string;
-  resultMode: ResultMode;
-  lcMode: LcMode;
-  resultSearch: string;
-  sortMode: SortMode;
+  readonly endgame: string;
+  readonly version: string;
+  readonly resultMode: ResultMode;
+  readonly lcMode: LcMode;
+  readonly resultSearch: string;
+  readonly sortMode: SortMode;
 }

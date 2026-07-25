@@ -5,7 +5,7 @@ import {
   inventoryStorageKey,
   serializeInventory,
 } from "../../domain/inventory.js";
-import type { Inventory, SerializedInventory } from "../../domain/types.js";
+import type { Inventory } from "../../domain/types.js";
 
 export class LocalStorageInventoryRepository implements InventoryRepository {
   constructor(
@@ -14,12 +14,10 @@ export class LocalStorageInventoryRepository implements InventoryRepository {
   ) {}
 
   load(): Inventory {
-    try {
-      const raw = this.storage.getItem(this.storageKey);
-      return raw ? importInventory(JSON.parse(raw) as SerializedInventory) : createEmptyInventory();
-    } catch {
-      return createEmptyInventory();
-    }
+    const raw = this.storage.getItem(this.storageKey);
+    if (raw === null) return createEmptyInventory();
+    const payload: unknown = JSON.parse(raw);
+    return importInventory(payload);
   }
 
   save(inventory: Inventory): void {

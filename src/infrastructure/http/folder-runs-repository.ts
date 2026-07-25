@@ -2,11 +2,6 @@ import type { RunSource, SelectableRunsRepository } from "../../app/ports.js";
 import type { RawRun } from "../../domain/types.js";
 import { HttpRunsRepository } from "./runs-repository.js";
 
-interface RunsManifest {
-  sources: RunSource[];
-  files?: string[];
-}
-
 export class FolderRunsRepository implements SelectableRunsRepository {
   private sources: RunSource[] | null = null;
   private resolvedManifestUrl: string;
@@ -20,7 +15,9 @@ export class FolderRunsRepository implements SelectableRunsRepository {
 
   async load(): Promise<RawRun[]> {
     const sources = await this.list();
-    return this.loadSource(sources[0]);
+    const source = sources[0];
+    if (!source) throw new Error("The runs manifest does not contain any sources");
+    return this.loadSource(source);
   }
 
   async list(): Promise<RunSource[]> {
@@ -31,17 +28,8 @@ export class FolderRunsRepository implements SelectableRunsRepository {
     if (!response.ok) throw new Error(`HTTP ${response.status} al cargar ${this.manifestUrl}`);
     this.resolvedManifestUrl = response.url || this.manifestUrl;
 
-    const manifest = (await response.json()) as Partial<RunsManifest>;
-    const sources = Array.isArray(manifest.sources)
-      ? manifest.sources
-      : (manifest.files ?? []).map(sourceFromLegacyPath);
-    if (sources.length === 0) {
-      throw new Error("El índice de runs/ no contiene fuentes de runs");
-    }
-
-    for (const source of sources) {
-      if (!isRunSource(source)) throw new Error(`Fuente de runs inválida: ${JSON.stringify(source)}`);
-    }
+    const manifest: unknown = await response.json();
+    const sources = parseRunsManifest(manifest);
 
     this.sources = sources;
     return sources;
@@ -53,9 +41,45 @@ export class FolderRunsRepository implements SelectableRunsRepository {
   }
 }
 
-function isRunSource(value: Partial<RunSource> | undefined): value is RunSource {
-  return Boolean(
-    value &&
+function parseRunsManifest(value: unknown): RunSource[] {
+  if (!isRecord(value)) {
+    throw new TypeError("Invalid runs manifest: expected an object");
+  }
+
+  let sources: RunSource[];
+  if (value.sources !== undefined) {
+    if (!Array.isArray(value.sources)) {
+      throw new TypeError("Invalid runs manifest: sources must be an array");
+    }
+    sources = value.sources.map((source, index) => {
+      if (!isRunSource(source)) {
+        throw new TypeError(`Invalid runs manifest: source ${index} is invalid`);
+      }
+      return source;
+    });
+  } else if (value.files !== undefined) {
+    if (!Array.isArray(value.files)) {
+      throw new TypeError("Invalid runs manifest: files must be an array");
+    }
+    sources = value.files.map((file, index) => {
+      if (!isRelativeJsonPath(file)) {
+        throw new TypeError(`Invalid runs manifest: legacy file ${index} is invalid`);
+      }
+      return sourceFromLegacyPath(file);
+    });
+  } else {
+    sources = [];
+  }
+
+  if (sources.length === 0) {
+    throw new TypeError("Invalid runs manifest: no run sources were provided");
+  }
+  return sources;
+}
+
+function isRunSource(value: unknown): value is RunSource {
+  return (
+    isRecord(value) &&
     isRelativeJsonPath(value.file) &&
     typeof value.endgame === "string" &&
     value.endgame.length > 0 &&
@@ -76,16 +100,40 @@ function sourceFromLegacyPath(file: string): RunSource {
 }
 
 function isRelativeJsonPath(value: unknown): value is string {
-  return (
-    typeof value === "string" &&
-    value.endsWith(".json") &&
-    !value.startsWith("/") &&
-    !value.includes("..") &&
-    !/^[a-z]+:/i.test(value)
-  );
+  if (
+    typeof value !== "string" ||
+    !value.endsWith(".json") ||
+    value.startsWith("/") ||
+    value.includes("\\") ||
+    /^[a-z]+:/i.test(value)
+  ) {
+    return false;
+  }
+
+  try {
+    const decoded = decodeURIComponent(value);
+    return decoded === value && !decoded.split("/").some((segment) => segment === "." || segment === "..");
+  } catch {
+    return false;
+  }
 }
 
 function resolveFromManifest(manifestUrl: string, file: string): string {
-  const separator = manifestUrl.lastIndexOf("/");
-  return `${manifestUrl.slice(0, separator + 1)}${file}`;
+  const manifest = new URL(manifestUrl, documentBaseUrl());
+  const base = new URL(".", manifest);
+  const target = new URL(file, base);
+
+  if (target.origin !== base.origin || !target.pathname.startsWith(base.pathname)) {
+    throw new TypeError("Invalid runs manifest: source path leaves the manifest directory");
+  }
+
+  return target.href;
+}
+
+function documentBaseUrl(): string {
+  return typeof document === "undefined" ? "http://localhost/" : document.baseURI;
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }

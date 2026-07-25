@@ -60,8 +60,9 @@ async function downloadCollection(collection, version) {
     console.log(`  Sin runs de "${options.boss}"; archivo sin cambios.`);
     return;
   }
+  const persistedOutput = { ...output, updatedAt: new Date().toISOString() };
   await mkdir(dirname(destination), { recursive: true });
-  await writeFile(temporary, `${JSON.stringify(output, null, 2)}\n`, "utf8");
+  await writeFile(temporary, `${JSON.stringify(persistedOutput, null, 2)}\n`, "utf8");
   await rm(destination, { force: true });
   await rename(temporary, destination);
   console.log(`  ${output.items.length} runs -> runs/${collection.directory}/${version}.json`);

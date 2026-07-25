@@ -2,6 +2,11 @@ import type { Inventory, ItemKind, SerializedInventory } from "./types.js";
 
 export const inventoryStorageKey = "herta-0cycle-inventory-v1";
 
+export interface MutableInventory {
+  characters: Map<string, number>;
+  lightCones: Map<string, number>;
+}
+
 export function createEmptyInventory(): Inventory {
   return {
     characters: new Map(),
@@ -31,11 +36,12 @@ export function serializeInventory(inventory: Inventory): SerializedInventory {
 }
 
 export function importInventory(
-  data: SerializedInventory,
+  data: unknown,
   reconcileWith?: { characters: string[]; lightCones: string[] }
 ): Inventory {
-  const characters = data.characters || data.personajes || {};
-  const lightCones = data.lightCones || data.light_cones || data.conos || {};
+  const parsed = parseSerializedInventory(data);
+  const characters = parsed.characters ?? parsed.personajes ?? {};
+  const lightCones = parsed.lightCones ?? parsed.light_cones ?? parsed.conos ?? {};
   const inventory = {
     characters: entriesToMap(characters, 0, 6),
     lightCones: entriesToMap(lightCones, 1, 5),
@@ -45,7 +51,15 @@ export function importInventory(
   return inventory;
 }
 
-export function reconcileInventory(inventory: Inventory, characters: string[], lightCones: string[]): void {
+export function parseSerializedInventory(value: unknown): SerializedInventory {
+  if (!isSerializedInventory(value)) {
+    throw new TypeError("Invalid inventory payload");
+  }
+  return value;
+}
+
+/** Removes entries outside the supplied catalog, mutating the provided working inventory. */
+export function reconcileInventory(inventory: MutableInventory, characters: string[], lightCones: string[]): void {
   const characterSet = new Set(characters);
   const lightConeSet = new Set(lightCones);
 
@@ -69,4 +83,38 @@ function clampNumber(value: unknown, min: number, max: number): number {
   const number = Number(value);
   if (Number.isNaN(number)) return min;
   return Math.min(max, Math.max(min, Math.trunc(number)));
+}
+
+function isSerializedInventory(value: unknown): value is SerializedInventory {
+  if (!isRecord(value)) return false;
+
+  return (
+    [value.characters, value.personajes, value.lightCones, value.light_cones, value.conos].some(
+      (collection) => collection !== undefined
+    ) &&
+    (value.version === undefined || value.version === 1) &&
+    (value.exportedAt === undefined || typeof value.exportedAt === "string") &&
+    isOptionalLevelRecord(value.characters) &&
+    isOptionalLevelRecord(value.personajes) &&
+    isOptionalLevelRecord(value.lightCones) &&
+    isOptionalLevelRecord(value.light_cones) &&
+    isOptionalLevelRecord(value.conos)
+  );
+}
+
+function isOptionalLevelRecord(value: unknown): value is Record<string, number> | undefined {
+  return value === undefined || isLevelRecord(value);
+}
+
+function isLevelRecord(value: unknown): value is Record<string, number> {
+  return (
+    isRecord(value) &&
+    Object.entries(value).every(
+      ([name, level]) => name.trim().length > 0 && typeof level === "number" && Number.isFinite(level)
+    )
+  );
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }

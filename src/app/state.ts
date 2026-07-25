@@ -1,25 +1,36 @@
-import { createCatalogFromRuns, type ItemCatalog } from "../domain/catalog.js";
+import { createCatalogFromRuns, createEmptyCatalog, type ItemCatalog } from "../domain/catalog.js";
 import { createEmptyInventory } from "../domain/inventory.js";
 import { normalizeRuns } from "../domain/normalize.js";
 import type { FilterState, Inventory, ItemKind, RawRun, Run } from "../domain/types.js";
 import type { RunSource } from "./ports.js";
 
-export type AppStatus = "idle" | "loading" | "ready" | "error";
+export type AppErrorCode =
+  | "runsDownloadFailed"
+  | "runCollectionFailed"
+  | "runsFileInvalid"
+  | "inventoryFileInvalid"
+  | "inventoryStorageReadFailed"
+  | "inventoryStorageWriteFailed";
+
+export type AppStatus =
+  | { readonly type: "idle" }
+  | { readonly type: "loading"; readonly message: "loadingRuns" }
+  | { readonly type: "ready" }
+  | { readonly type: "error"; readonly message: AppErrorCode };
 
 export interface InventorySearchState {
-  character: string;
-  lightCone: string;
+  readonly character: string;
+  readonly lightCone: string;
 }
 
 export interface AppState {
-  runs: Run[];
-  runSources: RunSource[];
-  catalog: ItemCatalog;
-  inventory: Inventory;
-  filters: FilterState;
-  inventorySearch: InventorySearchState;
-  status: AppStatus;
-  statusMessage: string;
+  readonly runs: readonly Run[];
+  readonly runSources: readonly RunSource[];
+  readonly catalog: ItemCatalog;
+  readonly inventory: Inventory;
+  readonly filters: FilterState;
+  readonly inventorySearch: InventorySearchState;
+  readonly status: AppStatus;
 }
 
 export type StateListener = (state: AppState) => void;
@@ -39,29 +50,28 @@ export class AppStore {
 
   constructor(inventory: Inventory = createEmptyInventory()) {
     this.state = {
-      runs: [],
-      runSources: [],
-      catalog: { characters: [], lightCones: [] },
+      runs: Object.freeze([]),
+      runSources: Object.freeze([]),
+      catalog: createEmptyCatalog(),
       inventory: cloneInventory(inventory),
       filters: { ...defaultFilters },
       inventorySearch: { character: "", lightCone: "" },
-      status: "idle",
-      statusMessage: "",
+      status: { type: "idle" },
     };
   }
 
   get snapshot(): AppState {
-    return this.state;
+    return createSnapshot(this.state);
   }
 
   subscribe(listener: StateListener): () => void {
     this.listeners.add(listener);
-    listener(this.state);
+    listener(this.snapshot);
     return () => this.listeners.delete(listener);
   }
 
   replaceRuns(rawRuns: RawRun[]): void {
-    const runs = normalizeRuns(rawRuns);
+    const runs = freezeRuns(normalizeRuns(rawRuns));
     const catalog = createCatalogFromRuns(runs);
     const inventory = cloneInventory(this.state.inventory);
     const availableEndgames = new Set(runs.map((run) => run.endgame));
@@ -78,7 +88,8 @@ export class AppStore {
   }
 
   replaceRunSources(runSources: RunSource[]): void {
-    this.commit({ ...this.state, runSources: [...runSources] });
+    const immutableSources = Object.freeze(runSources.map((source) => Object.freeze({ ...source })));
+    this.commit({ ...this.state, runSources: immutableSources });
   }
 
   replaceInventory(inventory: Inventory): void {
@@ -108,13 +119,13 @@ export class AppStore {
     });
   }
 
-  setStatus(status: AppStatus, statusMessage = ""): void {
-    this.commit({ ...this.state, status, statusMessage });
+  setStatus(status: AppStatus): void {
+    this.commit({ ...this.state, status });
   }
 
   private commit(nextState: AppState): void {
     this.state = nextState;
-    for (const listener of this.listeners) listener(this.state);
+    for (const listener of this.listeners) listener(this.snapshot);
   }
 }
 
@@ -135,9 +146,42 @@ function compareVersions(a: string, b: string): number {
   return a.localeCompare(b, undefined, { numeric: true });
 }
 
-function cloneInventory(inventory: Inventory): Inventory {
+function cloneInventory(inventory: Inventory): { characters: Map<string, number>; lightCones: Map<string, number> } {
   return {
     characters: new Map(inventory.characters),
     lightCones: new Map(inventory.lightCones),
+  };
+}
+
+function freezeRuns(runs: Run[]): readonly Run[] {
+  return Object.freeze(
+    runs.map((run) =>
+      Object.freeze({
+        ...run,
+        team: Object.freeze(run.team.map((member) => Object.freeze({ ...member }))),
+      })
+    )
+  );
+}
+
+function createSnapshot(state: AppState): AppState {
+  const characters = Object.freeze(state.catalog.characters.map((item) => Object.freeze({ ...item })));
+  const lightCones = Object.freeze(state.catalog.lightCones.map((item) => Object.freeze({ ...item })));
+
+  return {
+    runs: state.runs,
+    runSources: state.runSources,
+    catalog: {
+      characters,
+      lightCones,
+      itemsByKind: {
+        character: new Map(characters.map((item) => [item.name, item])),
+        lightCone: new Map(lightCones.map((item) => [item.name, item])),
+      },
+    },
+    inventory: cloneInventory(state.inventory),
+    filters: { ...state.filters },
+    inventorySearch: { ...state.inventorySearch },
+    status: { ...state.status },
   };
 }

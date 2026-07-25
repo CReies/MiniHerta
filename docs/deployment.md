@@ -10,13 +10,12 @@ La aplicacion es estatica:
 - No necesita workers ni colas.
 - No escribe en servidor durante runtime.
 
-El unico requisito de infraestructura es servir estos archivos por HTTP:
+Astro genera un sitio cerrado en `dist/`. El unico requisito de infraestructura es servir ese directorio por HTTP:
 
-- `index.html`
-- `styles.css`
-- `dist/**/*.js`
-- `runs/`
-- opcionalmente `banner-data/inventory.json` y docs/datos auxiliares
+- `dist/index.html`
+- `dist/_astro/`
+- `dist/assets/`
+- `dist/runs/`
 
 ## Desarrollo Local
 
@@ -52,9 +51,9 @@ pnpm build
 pnpm start
 ```
 
-`pnpm start` ejecuta `pnpm build` antes de servir.
+`pnpm start` ejecuta `pnpm build` antes de servir. El build genera el manifiesto `runs/index.json`, ejecuta Astro/Vite y copia las imagenes y colecciones necesarias a `dist/`.
 
-El server incluido en `scripts/serve.mjs` sirve desde la raiz del repo y bloquea path traversal. Es suficiente para uso local o LAN privada. Para internet/publico conviene usar un servidor estatico dedicado.
+El server incluido en `scripts/serve.mjs` sirve exclusivamente `dist/` y bloquea path traversal. Es suficiente para uso local o LAN privada. Para internet/publico conviene usar un servidor estatico dedicado.
 
 ## Despliegue Estatico
 
@@ -66,22 +65,13 @@ pnpm approve-builds --all
 pnpm build
 ```
 
-Luego publicar estos paths:
+Luego publicar unicamente:
 
 ```text
-index.html
-styles.css
 dist/
-runs/
-banner-data/inventory.json   opcional
 ```
 
-Tambien puedes publicar todo el repo excepto:
-
-```text
-node_modules/
-.git/
-```
+No es necesario copiar archivos fuente, `node_modules/`, datasets fuera de `dist/` ni utilidades del repositorio.
 
 ## Netlify, Vercel, Cloudflare Pages o Similar
 
@@ -89,22 +79,40 @@ Configuracion generica:
 
 - Install command: `pnpm install`
 - Build command: `pnpm build`
-- Publish directory: `.`
+- Publish directory: `dist`
 
-Nota: como el publish directory es la raiz, configurar ignores/excludes si el proveedor permite evitar subir `node_modules`, `.git`, datos crudos no necesarios o archivos internos.
+Astro usa `/` como base por defecto. Si el proveedor publica bajo un subpath, definir `ASTRO_BASE` con ese prefijo y `ASTRO_SITE` con el origen publico.
+
+## GitHub Pages
+
+El workflow `.github/workflows/pages.yml` deriva la configuracion desde el repositorio:
+
+```text
+ASTRO_BASE=/${repo name}
+ASTRO_SITE=https://${owner}.github.io
+```
+
+Con esas variables Astro genera enlaces validos bajo `https://${owner}.github.io/${repo name}/`. El workflow sube `dist/` directamente como artefacto de Pages; no crea un segundo directorio ni reescribe HTML o imports despues del build.
 
 ## Docker Opcional
 
 No hay Dockerfile actualmente. Si se necesita contenedor, basta un build multi-stage:
 
 1. Stage Node: `pnpm install`, `pnpm build`.
-2. Stage nginx/caddy: copiar `index.html`, `styles.css`, `dist/`, `assets/` y `runs/`.
+2. Stage nginx/caddy: copiar el contenido de `dist/` al document root.
 
 No hace falta proceso Node en runtime si se usa nginx/caddy.
 
 ## Variables de Entorno
 
-Solo aplican al server local incluido:
+Variables del build:
+
+| Variable     | Default | Uso                                                                |
+| ------------ | ------- | ------------------------------------------------------------------ |
+| `ASTRO_BASE` | `/`     | Prefijo publico cuando el sitio se aloja bajo un subpath.          |
+| `ASTRO_SITE` | vacio   | Origen publico usado para URLs canonicas y metadatos de la pagina. |
+
+Variables del server local incluido:
 
 | Variable | Default     | Uso                 |
 | -------- | ----------- | ------------------- |
@@ -119,24 +127,30 @@ $env:HOST="0.0.0.0"
 pnpm start
 ```
 
+Ejemplo de build para un repositorio de GitHub Pages:
+
+```powershell
+$env:ASTRO_BASE="/TheHerta"
+$env:ASTRO_SITE="https://owner.github.io"
+pnpm build
+```
+
 ## Checks de Release
 
 Antes de publicar:
 
 ```powershell
-pnpm typecheck
-pnpm lint
-pnpm format:check
+pnpm check
 pnpm build
 ```
 
 Verificar manualmente:
 
-- La pagina abre.
-- `runs/index.json` indexa las colecciones; el cliente carga la más reciente y solicita las demás al cambiar filtros.
+- La pagina abre desde la raiz o el subpath configurado.
+- `dist/runs/index.json` indexa las colecciones; el cliente carga la versión de juego más nueva y solicita las demás al cambiar filtros.
+- Los bundles bajo `dist/_astro/` y las imagenes bajo `dist/assets/` responden correctamente.
 - Importar inventario funciona.
 - Exportar inventario descarga JSON.
-- Modo oscuro persiste.
 - Los equipos cercanos muestran score y faltantes.
 
 ## Consideraciones de Seguridad

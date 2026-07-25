@@ -2,14 +2,14 @@
 
 Aplicacion local para cruzar runs 0-cycle de Honkai: Star Rail contra tu inventario real de personajes, eidolons, light cones y superimposiciones.
 
-La app carga inicialmente la colección más recientemente actualizada de `runs/` y solicita las demás bajo demanda al cambiar el endgame o la versión. También permite importar/exportar inventario, calcula equipos posibles y ordena equipos cercanos con un scoring ponderado por dificultad de obtener personajes/conos.
+La app carga inicialmente la versión de juego más nueva disponible en `runs/` y solicita las demás bajo demanda al cambiar el endgame o la versión. También permite importar/exportar inventario, calcula equipos posibles y ordena equipos cercanos con un scoring ponderado por dificultad de obtener personajes/conos.
 
 ## Quick Start
 
 Requisitos:
 
 - Windows PowerShell
-- Node.js disponible para `pnpm`
+- Node.js 22.12 o superior
 - `pnpm` 11+
 
 Instalar dependencias:
@@ -37,7 +37,7 @@ Modo desarrollo con rebuild automatico:
 pnpm start:dev
 ```
 
-Por defecto sirve en `http://127.0.0.1:8000/index.html`.
+Por defecto sirve en `http://127.0.0.1:8000/`.
 
 Si el puerto esta ocupado:
 
@@ -48,10 +48,14 @@ $env:PORT="8123"; pnpm start:dev
 
 ## Scripts
 
-- `pnpm build`: transpila `src/**/*.ts` a `dist/**/*.js`.
-- `pnpm start`: ejecuta build y sirve los archivos estaticos.
-- `pnpm start:dev`: ejecuta build inicial, sirve la app y recompila al cambiar `src/`, `index.html` o `styles.css`.
-- `pnpm typecheck`: valida TypeScript sin emitir archivos.
+- `pnpm build`: genera `runs/index.json`, construye la pagina con Astro/Vite y copia `assets/` y `runs/` al directorio cerrado `dist/`.
+- `pnpm start`: ejecuta el build y sirve exclusivamente `dist/`.
+- `pnpm start:dev`: ejecuta un build inicial, sirve `dist/` y recompila al cambiar `src/`, `runs/`, `styles.css` o `astro.config.mjs`.
+- `pnpm typecheck`: valida el TypeScript del cliente sin emitir archivos.
+- `pnpm typecheck:scripts`: valida los scripts Node del build y las utilidades.
+- `pnpm astro:check`: valida las paginas y layouts de Astro.
+- `pnpm check`: ejecuta typecheck, Astro check, lint, pruebas y validación de formato.
+- `pnpm test`: transpila los modulos TypeScript a `.test-dist/` y ejecuta las pruebas de Node.
 - `pnpm lint`: corre ESLint.
 - `pnpm format`: aplica Prettier.
 - `pnpm format:check`: valida formato.
@@ -66,14 +70,16 @@ $env:PORT="8123"; pnpm start:dev
 
 ## Archivos Importantes
 
-- `index.html`: shell HTML de la app.
-- `styles.css`: estilos globales, modo claro y modo oscuro.
-- `src/`: codigo fuente TypeScript.
-- `dist/`: JavaScript generado por `pnpm build`.
+- `src/pages/index.astro`: pagina estatica y shell HTML de la app.
+- `src/layouts/BaseLayout.astro`: layout base, metadatos y carga de estilos.
+- `styles.css`: estilos globales y tema oscuro.
+- `src/main.ts`: entrypoint del cliente y composition root.
+- `src/`: paginas Astro y codigo fuente TypeScript.
+- `dist/`: sitio estatico completo generado por `pnpm build`; es el unico directorio que se publica.
 - `runs/`: datasets de runs organizados por modo y temporada.
 - `banner-data/`: exports crudos de banners, TSV limpios e inventario generado.
 - `scripts/`: build, server local, modo dev y utilidades.
 
 ## Estado Actual
 
-La app no requiere backend ni base de datos. Todo corre en el navegador y persiste el inventario en `localStorage`. El servidor Node incluido solo sirve archivos estaticos para desarrollo/local hosting.
+La app no requiere backend ni base de datos. Astro genera el HTML estatico y Vite empaqueta el cliente; en runtime todo corre en el navegador y el inventario persiste en `localStorage`. El servidor Node incluido solo sirve `dist/` para desarrollo o hosting local.

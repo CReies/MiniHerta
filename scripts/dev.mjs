@@ -1,3 +1,5 @@
+// @ts-check
+
 import { spawn } from "node:child_process";
 import { existsSync, watch } from "node:fs";
 import { join } from "node:path";
@@ -5,9 +7,10 @@ import { fileURLToPath } from "node:url";
 import { serve } from "./serve.mjs";
 
 const root = fileURLToPath(new URL("../", import.meta.url));
-const watchTargets = ["src", "runs", "index.html", "styles.css"].map((target) => join(root, target));
+const watchTargets = ["src", "runs", "styles.css", "astro.config.mjs"].map((target) => join(root, target));
 let buildRunning = false;
 let buildQueued = false;
+/** @type {ReturnType<typeof setTimeout> | undefined} */
 let debounceTimer;
 
 await runBuild();
@@ -22,7 +25,7 @@ for (const target of watchTargets) {
   });
 }
 
-console.log("Watching src/, runs/, index.html and styles.css");
+console.log("Watching src/, runs/, styles.css, and astro.config.mjs");
 
 function queueBuild() {
   if (buildRunning) {
@@ -38,6 +41,7 @@ function queueBuild() {
   });
 }
 
+/** @returns {Promise<void>} */
 function runBuild() {
   buildRunning = true;
   console.log("Building...");

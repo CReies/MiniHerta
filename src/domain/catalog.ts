@@ -1,20 +1,15 @@
-import { characterAssets, lightConeAssets } from "../generated/assets.js";
-import { spanishCharacterNames, spanishLightConeNames } from "../data/spanish-item-names.js";
 import type { ItemKind, Rarity, Run } from "./types.js";
 
-export type Locale = "en" | "es";
-
 export interface CatalogItem {
-  kind: ItemKind;
-  name: string;
-  labels: Partial<Record<Locale, string>> & { en: string };
-  rarity: Rarity;
-  assetUrl: string;
+  readonly kind: ItemKind;
+  readonly name: string;
+  readonly rarity: Rarity;
 }
 
 export interface ItemCatalog {
-  characters: CatalogItem[];
-  lightCones: CatalogItem[];
+  characters: readonly CatalogItem[];
+  lightCones: readonly CatalogItem[];
+  itemsByKind: Readonly<Record<ItemKind, ReadonlyMap<string, CatalogItem>>>;
 }
 
 const fourStarCharacters = new Set([
@@ -79,78 +74,61 @@ const fourStarLightCones = new Set([
   "Under the Blue Sky",
 ]);
 
-export function createCatalogFromRuns(runs: Run[]): ItemCatalog {
-  return {
-    characters: collectRunItems(runs, "character"),
-    lightCones: collectRunItems(runs, "lightCone"),
+export function createCatalogFromRuns(runs: readonly Run[]): ItemCatalog {
+  const namesByKind = {
+    character: new Set<string>(),
+    lightCone: new Set<string>(),
   };
+
+  for (const run of runs) {
+    for (const member of run.team) {
+      if (member.char) namesByKind.character.add(member.char);
+      if (member.lc) namesByKind.lightCone.add(member.lc);
+    }
+  }
+
+  return createCatalog(namesByKind);
 }
 
-export function catalogNames(catalog: ItemCatalog): { characters: string[]; lightCones: string[] } {
-  return {
-    characters: catalog.characters.map((item) => item.name),
-    lightCones: catalog.lightCones.map((item) => item.name),
-  };
+export function createEmptyCatalog(): ItemCatalog {
+  return createCatalog({ character: new Set(), lightCone: new Set() });
 }
 
 export function findCatalogItem(catalog: ItemCatalog, kind: ItemKind, name: string): CatalogItem {
-  const items = kind === "character" ? catalog.characters : catalog.lightCones;
-  return items.find((item) => item.name === name) ?? createCatalogItem(kind, name);
-}
-
-export function itemImageUrl(catalog: ItemCatalog, kind: ItemKind, name: string): string {
-  return findCatalogItem(catalog, kind, name).assetUrl;
+  return catalog.itemsByKind[kind].get(name) ?? createCatalogItem(kind, name);
 }
 
 export function itemRarity(catalog: ItemCatalog, kind: ItemKind, name: string): Rarity {
   return findCatalogItem(catalog, kind, name).rarity;
 }
 
-function collectRunItems(runs: Run[], kind: ItemKind): CatalogItem[] {
-  const names = new Set<string>();
+function createCatalog(namesByKind: Readonly<Record<ItemKind, ReadonlySet<string>>>): ItemCatalog {
+  const characters = createCatalogItems("character", namesByKind.character);
+  const lightCones = createCatalogItems("lightCone", namesByKind.lightCone);
 
-  for (const run of runs) {
-    for (const member of run.team) {
-      const name = kind === "character" ? member.char : member.lc;
-      if (name) names.add(name);
-    }
-  }
+  return {
+    characters,
+    lightCones,
+    itemsByKind: {
+      character: new Map(characters.map((item) => [item.name, item])),
+      lightCone: new Map(lightCones.map((item) => [item.name, item])),
+    },
+  };
+}
 
+function createCatalogItems(kind: ItemKind, names: ReadonlySet<string>): CatalogItem[] {
   return [...names].sort().map((name) => createCatalogItem(kind, name));
 }
 
 function createCatalogItem(kind: ItemKind, name: string): CatalogItem {
-  const spanishNames = kind === "character" ? spanishCharacterNames : spanishLightConeNames;
   return {
     kind,
     name,
-    labels: { en: name, es: spanishNames[name] ?? name },
     rarity: inferRarity(kind, name),
-    assetUrl: assetUrl(kind, name),
   };
-}
-
-export function itemLabel(catalog: ItemCatalog, kind: ItemKind, name: string, locale: Locale): string {
-  const item = findCatalogItem(catalog, kind, name);
-  return item.labels[locale] ?? item.labels.en;
 }
 
 function inferRarity(kind: ItemKind, name: string): Rarity {
   const fourStars = kind === "character" ? fourStarCharacters : fourStarLightCones;
   return fourStars.has(name) ? 4 : 5;
-}
-
-function assetUrl(kind: ItemKind, name: string): string {
-  const folder = kind === "character" ? "characters" : "lightcones";
-  const assets = kind === "character" ? characterAssets : lightConeAssets;
-  return assets[name] || `assets/${folder}/${assetFileName(name)}`;
-}
-
-function assetFileName(name: string): string {
-  return `${name
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")}.webp`;
 }

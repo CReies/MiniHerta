@@ -5,7 +5,7 @@
 `runs/**/*.json`
 
 - Datasets principales de runs, organizados por modo y temporada.
-- El build genera `runs/index.json` con modo, versión y fecha de actualización. El navegador descarga sólo la fuente más reciente al inicio y solicita otra al cambiar los filtros.
+- El build genera `runs/index.json` con modo, versión y una fecha estable obtenida de `updatedAt` o de las fechas de sus runs, nunca del `mtime` local. El navegador descarga primero la versión de juego más nueva; fecha y ruta resuelven empates de forma determinista. Las demás fuentes se solicitan al cambiar los filtros.
 
 ## Descarga de runs
 
@@ -142,7 +142,7 @@ La app acepta inventarios con estas claves:
 Al importar:
 
 - Se conservan personajes/conos aunque no aparezcan en la colección cargada, porque el catálogo runtime contiene sólo el endgame y la versión activos.
-- Se ajustan valores fuera de rango.
+- Se rechazan estructuras, versiones o niveles no numéricos inválidos; los números finitos fuera de rango se ajustan a E0-E6 o S1-S5.
 - Se guarda el resultado en `localStorage`.
 
 Al exportar:

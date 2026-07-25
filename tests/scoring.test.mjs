@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { createCatalogFromRuns } from "../dist/domain/catalog.js";
-import { compareRuns, evaluateRun } from "../dist/domain/scoring.js";
+import { createCatalogFromRuns } from "../.test-dist/domain/catalog.js";
+import { compareRuns, evaluateRun } from "../.test-dist/domain/scoring.js";
 
 function makeRun({ id, character = "Acheron", eidolon = 0, lightCone = "In the Night", superimp = 1 }) {
   return {

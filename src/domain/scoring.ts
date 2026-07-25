@@ -1,6 +1,6 @@
 import { itemRarity, type ItemCatalog } from "./catalog.js";
 import type { EvaluatedRun, FilterState, Inventory, MissingItem, Run, TeamMember } from "./types.js";
-import { normalizeText } from "../utils/text.js";
+import { normalizeText } from "../shared/normalize-text.js";
 
 export const nearScoreLimit = 220;
 
@@ -29,7 +29,7 @@ export function evaluateRun(
   };
 }
 
-export function matchesFilters(run: EvaluatedRun, filters: FilterState, additionalSearchText = ""): boolean {
+export function matchesFilters(run: Run, filters: FilterState, additionalSearchText = ""): boolean {
   if (filters.endgame && filters.endgame !== "Todos" && run.endgame !== filters.endgame) return false;
   if (filters.version && run.version !== filters.version) return false;
 

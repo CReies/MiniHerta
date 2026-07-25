@@ -1,18 +1,19 @@
-import { itemImageUrl, type CatalogItem, type ItemCatalog } from "../domain/catalog.js";
+import type { CatalogItem, ItemCatalog } from "../domain/catalog.js";
 import { inventoryLevelBounds, stepInventoryLevel } from "../domain/inventory.js";
 import { mostUsedLightConesByCharacter, type LightConeUsage } from "../domain/light-cone-usage.js";
 import type { Inventory, ItemKind, Run } from "../domain/types.js";
-import { normalizeText } from "../utils/text.js";
 import type { Elements } from "./dom.js";
-import { t, type Locale } from "../i18n.js";
-import { spanishLightConeNames } from "../data/spanish-item-names.js";
+import { t, type Locale } from "./i18n.js";
+import { filterCatalogItems, filterCharacters } from "./inventory-search.js";
+import { itemImageUrl, itemLabel } from "./item-presentation.js";
 
 export type InventoryItemChange = (kind: ItemKind, item: string, level: number | null) => void;
 
 interface LevelEditorOptions {
   kind: ItemKind;
   item: string;
-  owned: Map<string, number>;
+  focusScope: string;
+  owned: ReadonlyMap<string, number>;
   root: HTMLElement;
   onChange: InventoryItemChange;
   displayName: string;
@@ -22,11 +23,12 @@ export function renderInventory(
   els: Elements,
   inventory: Inventory,
   catalog: ItemCatalog,
-  runs: Run[],
+  runs: readonly Run[],
   search: { character: string; lightCone: string },
   onChange: InventoryItemChange,
   locale: Locale
 ): void {
+  const focusId = currentInventoryFocusId();
   const usageByCharacter = mostUsedLightConesByCharacter(runs);
   const recommendedConeNames = new Set(
     [...usageByCharacter.values()].flatMap((lightCones) => lightCones.map((lightCone) => lightCone.name))
@@ -43,6 +45,7 @@ export function renderInventory(
     owned: inventory.lightCones.size,
     recommended: recommendedConeNames.size,
   });
+  restoreInventoryFocus(els, focusId);
 }
 
 function renderCharacters(
@@ -86,14 +89,14 @@ function renderOtherLightCones(
   locale: Locale
 ): void {
   els.lightCones.replaceChildren();
-  const lightCones = filteredCatalogItems(
+  const lightCones = filterCatalogItems(
     catalog.lightCones.filter((lightCone) => !recommendedConeNames.has(lightCone.name)),
     search
   );
 
   for (const lightCone of lightCones) {
     els.lightCones.appendChild(
-      createLightConeCard(lightCone, inventory.lightCones, catalog, els.lightConeCardTemplate, onChange, locale)
+      createLightConeCard(lightCone, inventory.lightCones, els.lightConeCardTemplate, onChange, locale)
     );
   }
 
@@ -119,15 +122,25 @@ function createCharacterCard(
   const recommendationList = requireDescendant<HTMLElement>(card, ".recommended-cone-list");
 
   card.classList.toggle("is-owned", inventory.characters.has(character.name));
-  const displayName = localizedLabel(character, locale);
+  const displayName = itemLabel("character", character.name, locale);
   name.textContent = displayName;
   rarity.textContent = `${character.rarity}★`;
   rarity.classList.add(`rarity-badge--${character.rarity}`);
-  configureImage(image, catalog, "character", character.name);
-  bindOwnershipToggle(checkbox, card, "character", character.name, displayName, inventory.characters, onChange);
+  configureImage(image, "character", character.name);
+  bindOwnershipToggle(
+    checkbox,
+    card,
+    "character",
+    character.name,
+    displayName,
+    inventory.characters,
+    onChange,
+    "characters"
+  );
   bindLevelEditor({
     kind: "character",
     item: character.name,
+    focusScope: "characters",
     owned: inventory.characters,
     root: card,
     onChange,
@@ -135,18 +148,18 @@ function createCharacterCard(
   });
 
   for (const [index, recommendation] of recommendations.entries()) {
-    const catalogItem = catalog.lightCones.find((item) => item.name === recommendation.name);
+    const catalogItem = catalog.itemsByKind.lightCone.get(recommendation.name);
     if (!catalogItem) continue;
     recommendationList.appendChild(
       createLightConeCard(
         catalogItem,
         inventory.lightCones,
-        catalog,
         els.lightConeCardTemplate,
         onChange,
         locale,
         recommendation,
-        index + 1
+        index + 1,
+        character.name
       )
     );
   }
@@ -160,13 +173,13 @@ function createCharacterCard(
 
 function createLightConeCard(
   lightCone: CatalogItem,
-  owned: Map<string, number>,
-  catalog: ItemCatalog,
+  owned: ReadonlyMap<string, number>,
   template: HTMLTemplateElement,
   onChange: InventoryItemChange,
   locale: Locale,
   recommendation?: LightConeUsage,
-  rank?: number
+  rank?: number,
+  focusScope = "other"
 ): HTMLElement {
   const card = cloneTemplate(template);
   const checkbox = requireDescendant<HTMLInputElement>(card, ".owned-input");
@@ -177,11 +190,11 @@ function createLightConeCard(
 
   card.classList.toggle("is-owned", owned.has(lightCone.name));
   card.classList.toggle("is-recommended", Boolean(recommendation));
-  const displayName = localizedLabel(lightCone, locale);
+  const displayName = itemLabel("lightCone", lightCone.name, locale);
   name.textContent = displayName;
-  configureImage(image, catalog, "lightCone", lightCone.name);
-  bindOwnershipToggle(checkbox, card, "lightCone", lightCone.name, displayName, owned, onChange);
-  bindLevelEditor({ kind: "lightCone", item: lightCone.name, displayName, owned, root: card, onChange });
+  configureImage(image, "lightCone", lightCone.name);
+  bindOwnershipToggle(checkbox, card, "lightCone", lightCone.name, displayName, owned, onChange, focusScope);
+  bindLevelEditor({ kind: "lightCone", item: lightCone.name, focusScope, displayName, owned, root: card, onChange });
 
   if (recommendation) {
     usage.textContent = t(recommendation.uses === 1 ? "inventory.use" : "inventory.uses", {
@@ -202,10 +215,12 @@ function bindOwnershipToggle(
   kind: ItemKind,
   item: string,
   displayName: string,
-  owned: Map<string, number>,
-  onChange: InventoryItemChange
+  owned: ReadonlyMap<string, number>,
+  onChange: InventoryItemChange,
+  focusScope: string
 ): void {
   const label = card.querySelector<HTMLElement>("[data-owned-label]");
+  checkbox.dataset.inventoryFocus = focusIdentifier(kind, item, "ownership", focusScope);
   checkbox.checked = owned.has(item);
   checkbox.setAttribute(
     "aria-label",
@@ -227,6 +242,9 @@ function bindLevelEditor(options: LevelEditorOptions): void {
   const { min, max } = inventoryLevelBounds(options.kind);
   const prefix = options.kind === "character" ? "E" : "S";
 
+  select.dataset.inventoryFocus = focusIdentifier(options.kind, options.item, "level", options.focusScope);
+  decrement.dataset.inventoryFocus = focusIdentifier(options.kind, options.item, "decrement", options.focusScope);
+  increment.dataset.inventoryFocus = focusIdentifier(options.kind, options.item, "increment", options.focusScope);
   select.replaceChildren(new Option("—", ""));
   for (let value = min; value <= max; value += 1) {
     select.appendChild(new Option(`${prefix}${value}`, String(value)));
@@ -255,36 +273,7 @@ function bindLevelEditor(options: LevelEditorOptions): void {
   });
 }
 
-function filteredCatalogItems(items: CatalogItem[], search: string): CatalogItem[] {
-  const query = normalizeText(search);
-  return items.filter((item) => searchableLabels(item).some((label) => normalizeText(label).includes(query)));
-}
-
-export function filterCharacters(
-  characters: CatalogItem[],
-  usageByCharacter: Map<string, LightConeUsage[]>,
-  search: string
-): CatalogItem[] {
-  const query = normalizeText(search);
-  if (!query) return characters;
-
-  return characters.filter((character) => {
-    if (searchableLabels(character).some((label) => normalizeText(label).includes(query))) return true;
-    return (usageByCharacter.get(character.name) ?? []).some((lightCone) =>
-      [lightCone.name, spanishLightConeNames[lightCone.name]].some((label) => normalizeText(label).includes(query))
-    );
-  });
-}
-
-function searchableLabels(item: CatalogItem): string[] {
-  return item.labels ? Object.values(item.labels) : [item.name];
-}
-
-function localizedLabel(item: CatalogItem, locale: Locale): string {
-  return item.labels[locale] ?? item.labels.en;
-}
-
-function configureImage(image: HTMLImageElement, catalog: ItemCatalog, kind: ItemKind, item: string): void {
+function configureImage(image: HTMLImageElement, kind: ItemKind, item: string): void {
   image.alt = "";
   image.hidden = false;
   image.onload = () => {
@@ -294,7 +283,7 @@ function configureImage(image: HTMLImageElement, catalog: ItemCatalog, kind: Ite
   image.onerror = () => {
     image.hidden = true;
   };
-  image.src = itemImageUrl(catalog, kind, item);
+  image.src = itemImageUrl(kind, item);
 }
 
 function cloneTemplate(template: HTMLTemplateElement): HTMLElement {
@@ -314,4 +303,50 @@ function createEmptyInventoryMessage(message: string): HTMLElement {
   element.className = "inventory-empty";
   element.textContent = message;
   return element;
+}
+
+function focusIdentifier(kind: ItemKind, item: string, control: string, scope: string): string {
+  return JSON.stringify([kind, item, control, scope]);
+}
+
+function currentInventoryFocusId(): string | undefined {
+  return document.activeElement instanceof HTMLElement ? document.activeElement.dataset.inventoryFocus : undefined;
+}
+
+function restoreInventoryFocus(els: Elements, focusId: string | undefined): void {
+  if (!focusId) return;
+  const controls = [
+    ...els.characters.querySelectorAll<HTMLElement>("[data-inventory-focus]"),
+    ...els.lightCones.querySelectorAll<HTMLElement>("[data-inventory-focus]"),
+  ];
+  const previousControl = controls.find((control) => control.dataset.inventoryFocus === focusId);
+  if (previousControl && !isDisabledControl(previousControl)) {
+    previousControl.focus({ preventScroll: true });
+    return;
+  }
+
+  const fallbackId = levelEditorFocusIdentifier(focusId);
+  controls.find((control) => control.dataset.inventoryFocus === fallbackId)?.focus({ preventScroll: true });
+}
+
+function isDisabledControl(control: HTMLElement): boolean {
+  return (control instanceof HTMLButtonElement || control instanceof HTMLInputElement) && control.disabled;
+}
+
+function levelEditorFocusIdentifier(focusId: string): string {
+  try {
+    const value: unknown = JSON.parse(focusId);
+    if (
+      Array.isArray(value) &&
+      value.length === 4 &&
+      typeof value[0] === "string" &&
+      typeof value[1] === "string" &&
+      typeof value[3] === "string"
+    ) {
+      return focusIdentifier(value[0] === "character" ? "character" : "lightCone", value[1], "level", value[3]);
+    }
+  } catch {
+    // An invalid focus token simply means there is nothing safe to restore.
+  }
+  return "";
 }

@@ -1,6 +1,5 @@
 import type { Elements } from "./dom.js";
-import { t, type Locale } from "../i18n.js";
-import { escapeHtml } from "../utils/text.js";
+import { t, type Locale } from "./i18n.js";
 
 interface RunFilterOption {
   endgame: string;
@@ -9,7 +8,7 @@ interface RunFilterOption {
 
 export function renderRunFilterOptions(
   els: Elements,
-  sources: RunFilterOption[],
+  sources: readonly RunFilterOption[],
   selectedEndgame = "",
   selectedVersion = "",
   locale: Locale = "en"
@@ -21,17 +20,14 @@ export function renderRunFilterOptions(
     (source) => source.version
   ).sort((a, b) => b.localeCompare(a, undefined, { numeric: true }));
 
-  els.endgameFilter.innerHTML = endgames
-    .map(
-      (endgame) =>
-        `<option value="${escapeHtml(endgame)}">${escapeHtml(endgame === "Todos" ? t("filter.all") : localizedEndgame(endgame, locale))}</option>`
+  els.endgameFilter.replaceChildren(
+    ...endgames.map(
+      (endgame) => new Option(endgame === "Todos" ? t("filter.all") : localizedEndgame(endgame, locale), endgame)
     )
-    .join("");
+  );
   els.endgameFilter.value = activeEndgame;
 
-  els.versionFilter.innerHTML = versions
-    .map((version) => `<option value="${escapeHtml(version)}">${escapeHtml(version)}</option>`)
-    .join("");
+  els.versionFilter.replaceChildren(...versions.map((version) => new Option(version, version)));
   els.versionFilter.value = versions.includes(selectedVersion) ? selectedVersion : (versions[0] ?? "");
 }
 
@@ -46,6 +42,6 @@ function localizedEndgame(value: string, locale: Locale): string {
   return labels[value] ?? value;
 }
 
-function uniqueValues<T>(items: T[], select: (item: T) => string): string[] {
+function uniqueValues<T>(items: readonly T[], select: (item: T) => string): string[] {
   return [...new Set(items.map(select).filter(Boolean))];
 }

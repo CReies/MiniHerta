@@ -1,10 +1,10 @@
 import type { Inventory, RawRun } from "../domain/types.js";
 
 export interface RunSource {
-  file: string;
-  endgame: string;
-  version: string;
-  updatedAt: string;
+  readonly file: string;
+  readonly endgame: string;
+  readonly version: string;
+  readonly updatedAt: string;
 }
 
 export interface RunsRepository {

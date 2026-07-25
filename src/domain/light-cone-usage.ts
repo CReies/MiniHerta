@@ -5,7 +5,7 @@ export interface LightConeUsage {
   uses: number;
 }
 
-export function mostUsedLightConesByCharacter(runs: Run[], limit = 3): Map<string, LightConeUsage[]> {
+export function mostUsedLightConesByCharacter(runs: readonly Run[], limit = 3): Map<string, LightConeUsage[]> {
   const usage = new Map<string, Map<string, number>>();
 
   for (const run of runs) {

@@ -5,7 +5,7 @@ import { BrowserJsonFileGateway } from "./infrastructure/browser/json-file-gatew
 import { createDefaultRunsRepositories } from "./infrastructure/http/default-run-sources.js";
 import { AppViewController } from "./ui/app-view-controller.js";
 import { getElements } from "./ui/dom.js";
-import { initializeLocale, translateDocument } from "./i18n.js";
+import { initializeLocale, translateDocument } from "./ui/i18n.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   initializeLocale();

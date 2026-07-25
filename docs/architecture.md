@@ -17,9 +17,14 @@ Infraestructura -> Aplicación -> Dominio
 
 ```text
 src/
+  layouts/
+    BaseLayout.astro           Layout HTML, metadatos y estilos globales
+  pages/
+    index.astro                Pagina estatica y shell de la interfaz
   domain/                    Reglas y modelos puros
     catalog.ts
     inventory.ts
+    light-cone-usage.ts
     normalize.ts
     scoring.ts
     types.ts
@@ -34,15 +39,25 @@ src/
       json-file-gateway.ts
     http/
       default-run-sources.ts
+      folder-runs-repository.ts
       runs-repository.ts
   ui/                         Presentación DOM
     app-view-controller.ts
     bosses.ts
     dom.ts
+    escape-html.ts
+    format-date.ts
+    i18n.ts
     inventory.ts
-    render.ts
+    inventory-search.ts
+    item-presentation.ts
     results.ts
-    theme.ts
+  shared/
+    normalize-text.ts
+  data/
+    spanish-item-names.ts
+  generated/
+    assets.ts
   main.ts                     Composition root
 ```
 
@@ -51,8 +66,9 @@ src/
 El dominio contiene funciones puras y no depende de DOM, `localStorage`, `fetch` ni archivos:
 
 - `normalize.ts` transforma entradas externas en entidades `Run`.
-- `catalog.ts` construye el catálogo y resuelve rareza y assets.
+- `catalog.ts` construye el catálogo indexado y resuelve rarezas; no conoce traducciones ni assets.
 - `inventory.ts` crea, valida, reconcilia y serializa inventarios.
+- `light-cone-usage.ts` calcula los conos mas usados por personaje.
 - `scoring.ts` evalúa runs, faltantes, filtros y ordenamiento.
 - `types.ts` define el lenguaje común del negocio.
 
@@ -91,13 +107,13 @@ La clase depende de los puertos `RunsRepository` e `InventoryRepository`, no de 
 evento DOM -> caso de uso -> AppStore.commit -> suscriptores -> render
 ```
 
-El inventario se clona antes de actualizar sus `Map`, por lo que una vista o prueba nunca observa mutaciones retroactivas de un estado anterior. El estado reúne runs, catálogo, inventario, filtros, búsquedas y estado de carga/error.
+El store normaliza y congela los runs que recibe, clona sus `Map` internos al exponer snapshots y vuelve a clonar el inventario antes de actualizarlo. Una vista o prueba no puede alterar el estado interno ni observar mutaciones retroactivas. Sus contratos exponen colecciones de solo lectura. El estado reúne runs, catálogo, inventario, filtros, búsquedas y un estado discriminado de carga/error que no permite combinaciones inválidas.
 
 ## Infraestructura
 
 - `LocalStorageInventoryRepository` adapta `localStorage` al puerto de inventario.
 - `HttpRunsRepository` adapta cualquier endpoint JSON al puerto de runs.
-- `FolderRunsRepository` carga el manifiesto generado de `runs/`, trae inicialmente sólo la colección más recientemente actualizada y obtiene las demás bajo demanda.
+- `FolderRunsRepository` carga el manifiesto generado de `runs/`, trae inicialmente la versión de juego más nueva y obtiene las demás bajo demanda. La fecha estable del dataset y la ruta resuelven empates de forma determinista.
 - `createDefaultRunsRepositories` configura la carpeta local como fuente predeterminada.
 - `BrowserJsonFileGateway` encapsula lectura y descarga de archivos del navegador.
 
@@ -105,21 +121,28 @@ Los fallos de una fuente de runs no contaminan el caso de uso: la aplicación in
 
 ## Presentación
 
-`AppViewController` conecta eventos DOM con comandos de aplicación y se suscribe al store. Los renders reciben datos y callbacks; no persisten datos ni modifican directamente el inventario.
+`src/pages/index.astro` define el shell HTML y carga `src/main.ts` desde un `<script>` procesado por Vite. `BaseLayout.astro` centraliza el documento base, los metadatos y los estilos globales.
+
+En el cliente, `AppViewController` conecta eventos DOM con comandos de aplicación y se suscribe al store. Los renders reciben datos y callbacks; no persisten datos ni modifican directamente el inventario.
+
+`item-presentation.ts` adapta nombres canónicos del dominio a etiquetas localizadas y URLs de imágenes. De este modo, los archivos generados y las traducciones permanecen en presentación. `inventory-search.ts` mantiene las búsquedas como transformaciones puras y comprobables.
 
 `main.ts` funciona únicamente como composition root: instancia el store, los adaptadores, la aplicación y el controlador de vista.
 
 ## Build y pruebas
 
-`scripts/build.mjs` descubre recursivamente los archivos TypeScript bajo `src/` y conserva su estructura en `dist/`. Añadir una clase o módulo ya no requiere modificar el script de build.
+`scripts/build.mjs` genera primero `runs/index.json`, invoca el build estatico de Astro y copia `assets/` y `runs/` al resultado. Astro genera el HTML y Vite empaqueta el entrypoint del cliente y sus imports en `dist/_astro/`.
 
-Las pruebas cubren tanto reglas de dominio como límites arquitectónicos: scoring, emisiones del store, inmutabilidad de inventario, fallback de repositorios y persistencia de comandos.
+`dist/` queda como un artefacto cerrado: contiene `index.html`, los bundles versionados, las imagenes y las colecciones de runs. El servidor local y los despliegues consumen ese directorio sin leer archivos fuente del repositorio.
+
+Las pruebas no reutilizan el bundle de producción. `scripts/build-test-modules.mjs` transpila los modulos TypeScript a `.test-dist/`, un directorio ignorado por Git, y `node --test` importa esos modulos.
+
+Las pruebas cubren tanto reglas de dominio como límites arquitectónicos: scoring, validación profunda de inventarios, manifiestos y runs reales, cancelación lógica de cargas obsoletas, snapshots defensivos del store, fallback de repositorios y persistencia de comandos. Un test estático impide dependencias hacia capas superiores y ciclos entre módulos.
 
 Comandos de validación:
 
 ```powershell
 pnpm check
-pnpm lint
-pnpm test
 pnpm format:check
+pnpm build
 ```
