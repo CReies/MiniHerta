@@ -55,7 +55,7 @@ $env:PORT="8123"; pnpm start:dev
 - `pnpm lint`: corre ESLint.
 - `pnpm format`: aplica Prettier.
 - `pnpm format:check`: valida formato.
-- `pnpm runs:download`: descarga del archivo oficial todas las colecciones soportadas en `runs/`.
+- `pnpm runs:download`: descarga del archivo oficial las colecciones soportadas en `runs/`. Acepta filtros por versión, modo y boss; consulta [Descarga de runs](docs/data.md#descarga-de-runs).
 - `pnpm assets:download`: completa los assets de todas las colecciones en `runs/` y regenera su manifiesto.
 
 ## Documentacion

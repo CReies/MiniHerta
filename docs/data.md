@@ -6,6 +6,40 @@
 
 - Datasets principales de runs, organizados por modo y temporada.
 - El build genera `runs/index.json` con modo, versión y fecha de actualización. El navegador descarga sólo la fuente más reciente al inicio y solicita otra al cambiar los filtros.
+
+## Descarga de runs
+
+Sin parámetros, el comando actualiza todas las versiones soportadas de AA, PF, AS y MOC:
+
+```powershell
+pnpm runs:download
+```
+
+Se puede limitar la descarga con estos parámetros:
+
+- `--version <versión>`: descarga una versión, por ejemplo `4.3`. Si no se indica modo, actualiza todos los modos que soportan esa versión.
+- `--mode <modo>`: descarga sólo `AA`, `PF`, `AS` o `MOC`. También acepta el nombre completo, como `"Pure Fiction"`.
+- `--boss <nombre>`: actualiza sólo las runs cuyo `boss_name` coincide con el nombre, ignorando mayúsculas y minúsculas. Las runs de otros bosses que ya estén en el JSON se conservan.
+- `--help`: muestra la ayuda en la terminal.
+
+Los parámetros se pueden combinar. Con `pnpm`, se escriben después de `--`:
+
+```powershell
+# Todas las colecciones de la versión 4.3
+pnpm runs:download -- --version 4.3
+
+# Todas las versiones de Pure Fiction
+pnpm runs:download -- --mode PF
+
+# Sólo la versión 4.4 de Anomaly Arbitration
+pnpm runs:download -- --mode AA --version 4.4
+
+# Actualiza un boss concreto sin eliminar los demás bosses del archivo
+pnpm runs:download -- --mode AA --version 4.4 --boss "Skaracabaz"
+```
+
+También se acepta la sintaxis `--parámetro=valor`. Una versión que no exista para el modo seleccionado o un modo desconocido detienen el comando. Al filtrar por boss, las colecciones sin coincidencias se omiten; si ninguna colección seleccionada contiene ese boss, el comando termina con error sin reemplazar archivos.
+
 - La app toma runs con `subcategory = "0-Cycle"` o `metric_value = 0`.
 - Cada run contiene hasta cuatro personajes y cuatro light cones.
 - Tambien alimenta el catalogo runtime de items. El catalogo cruza esos nombres con assets generados, rarezas y etiquetas en inglés y español.
