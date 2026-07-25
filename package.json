@@ -8,6 +8,7 @@
     "start": "pnpm build && node scripts/serve.mjs",
     "start:dev": "node scripts/dev.mjs",
     "runs:download": "node scripts/download-runs.mjs",
+    "translations:update": "node scripts/update-translations.mjs",
     "assets:download": "node scripts/download-assets.mjs",
     "assets:optimize": "node scripts/optimize-assets.mjs",
     "typecheck": "tsc --noEmit",

@@ -51,6 +51,8 @@ También se acepta la sintaxis `--parámetro=valor`. Una versión que no exista 
 - Los catálogos `index_new/en` e `index_new/es` se cruzaron por el ID estable del recurso del juego.
 - El nombre inglés continúa siendo la clave interna de inventarios y runs; el español es una etiqueta de presentación.
 - Cuando una entrada nueva todavía no existe en el catálogo español, la interfaz conserva el nombre inglés como fallback.
+- `pnpm translations:update` vuelve a recorrer `runs/`, descarga ambos catálogos y regenera las etiquetas.
+- `pnpm translations:update --strict` además termina con error si algún nombre utilizado aún no existe en la fuente.
 
 `banner-data/*.txt`
 
