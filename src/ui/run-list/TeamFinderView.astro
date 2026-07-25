@@ -1,0 +1,112 @@
+<section id="teamFinderView" class="view-page" data-view="team-finder" aria-labelledby="resultsHeading">
+  <div class="results-panel">
+    <section class="filters panel">
+      <div class="filters-intro">
+        <div>
+          <p class="eyebrow" data-i18n="results.eyebrow">Recommendations</p>
+          <h2 id="resultsHeading" data-i18n="results.title">Teams for your account</h2>
+        </div>
+        <p data-i18n="results.subtitle">From teams you can already use to those that need more investment.</p>
+      </div>
+      <div class="filter-grid">
+        <label class="field-label">
+          <span class="field-title">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 3 5 6v5c0 4.6 2.9 8.1 7 10 4.1-1.9 7-5.4 7-10V6l-7-3Z"></path>
+              <path d="m9 12 2 2 4-4"></path>
+            </svg>
+            <span data-i18n="filters.endgame">Endgame</span>
+          </span>
+          <span class="select-box">
+            <select id="endgameFilter"></select>
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 10 4 4 4-4"></path></svg>
+          </span>
+        </label>
+        <label class="field-label">
+          <span class="field-title">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M7 3v3M17 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z"
+              ></path>
+            </svg>
+            <span data-i18n="filters.version">Version</span>
+          </span>
+          <span class="select-box">
+            <select id="versionFilter"></select>
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 10 4 4 4-4"></path></svg>
+          </span>
+        </label>
+        <label class="field-label">
+          <span class="field-title">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+              <path d="m12 3 6 3.5v7L12 21l-6-7.5v-7L12 3Z"></path>
+              <path d="m9 8.5 3 1.8 3-1.8M12 10.3V16"></path>
+            </svg>
+            <span data-i18n="filters.lightCones">Light Cones</span>
+          </span>
+          <span class="select-box">
+            <select id="lcMode">
+              <option value="strict" data-i18n="filters.strict">Light Cone and superimposition</option>
+              <option value="name" data-i18n="filters.name">Light Cone only</option>
+              <option value="ignore" data-i18n="filters.ignore">Ignore Light Cones</option>
+            </select>
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 10 4 4 4-4"></path></svg>
+          </span>
+        </label>
+        <label class="field-label field-label--search">
+          <span class="field-title">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="11" cy="11" r="6.5"></circle>
+              <path d="m16 16 4 4"></path>
+            </svg>
+            <span data-i18n="filters.search">Search results</span>
+          </span>
+          <span class="search-box search-box--results">
+            <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="11" cy="11" r="6.5"></circle>
+              <path d="m16 16 4 4"></path>
+            </svg>
+            <input
+              id="resultSearch"
+              type="search"
+              placeholder="Character, author, or Light Cone"
+              data-i18n-placeholder="filters.searchPlaceholder"
+            />
+          </span>
+        </label>
+      </div>
+    </section>
+
+    <div class="summary-strip">
+      <p id="resultsAnnouncement" class="sr-only" role="status" aria-live="polite" aria-atomic="true"></p>
+      <div class="summary-card summary-card--possible">
+        <span class="summary-icon" aria-hidden="true"
+          ><svg class="icon" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9"></circle>
+            <path d="m8 12 2.5 2.5L16 9"></path></svg
+          ></span
+        >
+        <span class="summary-value" id="possibleCount">0</span>
+        <small data-i18n="summary.possible">possible now</small>
+      </div>
+      <div class="summary-card summary-card--near">
+        <span class="summary-icon" aria-hidden="true"
+          ><svg class="icon" viewBox="0 0 24 24">
+            <path d="M12 3v6l4 2"></path>
+            <circle cx="12" cy="12" r="9"></circle></svg
+          ></span
+        >
+        <span class="summary-value" id="nearCount">0</span>
+        <small data-i18n="summary.near">nearby teams</small>
+      </div>
+      <div class="summary-card summary-card--total">
+        <span class="summary-icon" aria-hidden="true"
+          ><svg class="icon" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"></path></svg></span
+        >
+        <span class="summary-value" id="runCount">0</span>
+        <small data-i18n="summary.total">runs analyzed</small>
+      </div>
+    </div>
+
+    <div id="results" class="results"></div>
+  </div>
+</section>

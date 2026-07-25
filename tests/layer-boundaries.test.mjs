@@ -59,6 +59,23 @@ test("source modules do not contain circular dependencies", async () => {
   assert.equal(cycle?.join(" -> "), undefined);
 });
 
+test("feature internals are imported only by their owning feature", async () => {
+  const graph = await sourceGraph();
+  const violations = [];
+
+  for (const [source, dependencies] of graph) {
+    for (const dependency of dependencies) {
+      if (!dependency.includes("/internal/")) continue;
+      const owner = dependency.split("/internal/")[0];
+      if (!source.startsWith(`${owner}/`)) {
+        violations.push(`${source} -> ${dependency}`);
+      }
+    }
+  }
+
+  assert.deepEqual(violations, []);
+});
+
 async function sourceGraph() {
   const files = await collectTypeScriptFiles(sourceRoot);
   const graph = new Map();

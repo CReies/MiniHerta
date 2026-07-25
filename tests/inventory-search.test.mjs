@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { filterCharacters } from "../.test-dist/ui/inventory-search.js";
+import { filterCharacters } from "../.test-dist/ui/inventory/inventory-search.js";
 
 const characters = [
   { name: "Acheron", rarity: 5 },

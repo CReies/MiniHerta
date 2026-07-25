@@ -1,0 +1,54 @@
+<a class="skip-link" href="#mainContent" data-i18n="skip.main">Skip to main content</a>
+<header class="topbar">
+  <div class="brand" aria-label="Herta Team Finder">
+    <span class="brand-mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24">
+        <path d="M12 2l1.65 5.35L19 9l-5.35 1.65L12 16l-1.65-5.35L5 9l5.35-1.65L12 2Z"></path>
+        <path d="m18.5 15 .75 2.25L21.5 18l-2.25.75L18.5 21l-.75-2.25L15.5 18l2.25-.75.75-2.25Z"></path>
+      </svg>
+    </span>
+    <span class="brand-copy">
+      <strong>Herta Team Finder</strong>
+      <small>Honkai: Star Rail</small>
+    </span>
+  </div>
+  <nav class="view-nav" aria-label="Main views" data-i18n-aria-label="nav.aria">
+    <a class="view-nav__link" href="#team-finder" data-view-link="team-finder">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 6h16M4 12h16M4 18h10"></path>
+      </svg>
+      <span data-i18n="nav.teamFinder">Team Finder</span>
+    </a>
+    <a class="view-nav__link" href="#inventario" data-view-link="inventario">
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 7.5 12 3l8 4.5v9L12 21l-8-4.5v-9Z"></path>
+        <path d="m4.5 7.5 7.5 4.2 7.5-4.2M12 12v9"></path>
+      </svg>
+      <span data-i18n="nav.inventory">Inventory</span>
+    </a>
+  </nav>
+  <div class="top-actions">
+    <label class="language-picker">
+      <span class="sr-only" data-i18n="language.label">Language</span>
+      <select id="languageSelect" aria-label="Language" data-i18n-aria-label="language.label">
+        <option value="en">EN</option>
+        <option value="es">ES</option>
+      </select>
+    </label>
+    <label class="button button--secondary import-button">
+      <input
+        id="jsonFile"
+        class="sr-only"
+        type="file"
+        accept="application/json"
+        aria-label="Load runs"
+        data-i18n-aria-label="actions.loadRuns"
+      />
+      <svg class="icon" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 16V4m0 0L7.5 8.5M12 4l4.5 4.5"></path>
+        <path d="M5 14v4a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-4"></path>
+      </svg>
+      <span data-i18n="actions.loadRuns">Load runs</span>
+    </label>
+  </div>
+</header>

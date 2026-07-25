@@ -2,147 +2,242 @@
 
 ## Objetivo
 
-La aplicación sigue una arquitectura por capas inspirada en Clean Architecture. Las dependencias apuntan hacia el dominio y los detalles del navegador quedan en el exterior. Esto permite sustituir la persistencia, las fuentes de runs o la interfaz sin reescribir las reglas de scoring.
+La aplicación mantiene una arquitectura frontend por capas. Las dependencias apuntan hacia el dominio y los detalles del navegador permanecen en el exterior:
 
 ```text
 UI ────────────────┐
                    v
-Infraestructura -> Aplicación -> Dominio
+Infraestructura -> Aplicación -> Dominio -> Shared
                          |
                          v
                   Estado observable
 ```
+
+La organización interna usa features reales para que cada archivo tenga una sola razón de cambio. No se utilizan barrels globales: cada consumidor importa la API concreta que necesita.
 
 ## Estructura
 
 ```text
 src/
   layouts/
-    BaseLayout.astro           Layout HTML, metadatos y estilos globales
+    BaseLayout.astro
   pages/
-    index.astro                Pagina estatica y shell de la interfaz
-  domain/                    Reglas y modelos puros
-    catalog.ts
-    inventory.ts
-    light-cone-usage.ts
-    normalize.ts
-    scoring.ts
-    types.ts
-  app/                       Casos de uso y puertos
-    application.ts
-    ports.ts
-    results.ts
-    state.ts
-  infrastructure/            Adaptadores externos
+    index.astro
+  domain/
+    item.types.ts
+    catalog/
+      catalog.types.ts
+      create-catalog.ts
+      item-rarity.ts
+    inventory/
+      create-inventory.ts
+      inventory-levels.ts
+      inventory-serialization.ts
+      inventory.types.ts
+    runs/
+      light-cone-usage.ts
+      normalize-runs.ts
+      parse-runs-payload.ts
+      run.types.ts
+    scoring/
+      evaluate-run.ts
+      filter-runs.ts
+      scoring.types.ts
+  app/
+    application-state/
+      app-state.types.ts
+      app-store.ts
+      internal/
+        state-immutability.ts
+    inventory/
+      inventory-actions.ts
+      inventory-repository.ts
+    results/
+      select-results.ts
+    runs/
+      run-actions.ts
+      runs-repository.ts
+      internal/
+        load-run-repository.ts
+        select-run-sources.ts
+    herta-application.ts
+  infrastructure/
     browser/
       inventory-repository.ts
       json-file-gateway.ts
     http/
-      default-run-sources.ts
-      folder-runs-repository.ts
-      runs-repository.ts
-  ui/                         Presentación DOM
-    app-view-controller.ts
-    bosses.ts
-    dom.ts
-    escape-html.ts
-    format-date.ts
-    i18n.ts
-    inventory.ts
-    inventory-search.ts
-    item-presentation.ts
-    results.ts
+      runs/
+        create-default-runs-repositories.ts
+        folder-runs-repository.ts
+        http-runs-repository.ts
+        internal/
+          parse-runs-manifest.ts
+          resolve-run-source-url.ts
+  ui/
+    application-shell/
+      ApplicationHeader.astro
+      HeroBanner.astro
+      application-elements.ts
+      bind-application-events.ts
+      create-application-shell.ts
+      render-application-state.ts
+      render-application-status.ts
+      sync-view-navigation.ts
+    inventory/
+      InventoryTemplates.astro
+      InventoryView.astro
+      inventory-elements.ts
+      inventory-search.ts
+      inventory-view.types.ts
+      render-inventory.ts
+      internal/
+        bind-inventory-controls.ts
+        create-inventory-card.ts
+        inventory-focus.ts
+    items/
+      item-presentation.ts
+      item-search.ts
+    localization/
+      format-date.ts
+      locale.ts
+      messages.ts
+      translate-document.ts
+    run-filters/
+      render-run-filter-options.ts
+      run-filter-elements.ts
+    run-list/
+      TeamFinderView.astro
+      create-run-list-summary.ts
+      render-run-list.ts
+      run-list-elements.ts
+      internal/
+        render-run-card.ts
+        run-list-icons.ts
   shared/
     normalize-text.ts
   data/
-    spanish-item-names.ts
   generated/
-    assets.ts
-  main.ts                     Composition root
+  main.ts
 ```
 
-## Dominio
+## Responsabilidades y APIs públicas
 
-El dominio contiene funciones puras y no depende de DOM, `localStorage`, `fetch` ni archivos:
+### Dominio
 
-- `normalize.ts` transforma entradas externas en entidades `Run`.
-- `catalog.ts` construye el catálogo indexado y resuelve rarezas; no conoce traducciones ni assets.
-- `inventory.ts` crea, valida, reconcilia y serializa inventarios.
-- `light-cone-usage.ts` calcula los conos mas usados por personaje.
-- `scoring.ts` evalúa runs, faltantes, filtros y ordenamiento.
-- `types.ts` define el lenguaje común del negocio.
+- `catalog/create-catalog.ts`: construye índices y consulta rarezas.
+- `inventory/create-inventory.ts`: crea y reconcilia inventarios.
+- `inventory/inventory-levels.ts`: define límites y transiciones E/S.
+- `inventory/inventory-serialization.ts`: valida, importa y serializa el formato externo.
+- `runs/parse-runs-payload.ts`: valida datos externos como `unknown`.
+- `runs/normalize-runs.ts`: transforma runs válidos al modelo del dominio.
+- `runs/light-cone-usage.ts`: deriva recomendaciones por personaje.
+- `scoring/evaluate-run.ts`: calcula faltantes y score.
+- `scoring/filter-runs.ts`: filtra, selecciona modos y ordena resultados.
 
-El scoring ponderado mantiene estas reglas:
+Los archivos `*.types.ts` contienen únicamente contratos de su feature. `item.types.ts` permanece transversal porque `ItemKind` y `Rarity` son vocabulario común de catálogo, inventario, scoring y presentación.
 
-| Falta                                     |         Score |
-| ----------------------------------------- | ------------: |
-| Personaje 4 estrellas nuevo               |            20 |
-| Eidolon de personaje 4 estrellas          |  30 por nivel |
-| Personaje 5 estrellas nuevo               |           100 |
-| Eidolon de personaje 5 estrellas          | 135 por nivel |
-| Light cone 4 estrellas nuevo              |            10 |
-| Superimposición de light cone 4 estrellas |  16 por nivel |
-| Light cone 5 estrellas nuevo              |            70 |
-| Superimposición de light cone 5 estrellas |  90 por nivel |
+### Aplicación
 
-Un run es cercano con `missingScore <= 220` y posible con `missingScore === 0`.
+- `herta-application.ts`: facade estable consumida por la UI.
+- `application-state/app-store.ts`: estado observable y comandos de actualización.
+- `inventory/inventory-actions.ts`: casos de uso y persistencia de inventario.
+- `inventory/inventory-repository.ts`: puerto específico de almacenamiento.
+- `runs/run-actions.ts`: fallback, concurrencia y cambio de fuentes.
+- `runs/runs-repository.ts`: contratos de fuentes simples y seleccionables.
+- `results/select-results.ts`: selección derivada para la presentación.
 
-## Aplicación
+Los módulos bajo `internal/` encapsulan snapshots, selección y carga detallada. Solo pueden importarse desde su propia feature; una prueba de arquitectura protege esta regla.
 
-`HertaApplication` expone los casos de uso de la app:
+### Infraestructura
 
-- inicializar las fuentes con fallback ordenado;
-- cargar runs importados;
-- importar, exportar, actualizar y reiniciar inventario;
-- cambiar filtros y búsquedas;
-- persistir después de cada comando relevante.
+- `LocalStorageInventoryRepository`: adapta `localStorage` al puerto de inventario.
+- `BrowserJsonFileGateway`: adapta lectura y descarga de JSON del navegador.
+- `HttpRunsRepository`: obtiene y valida una colección HTTP.
+- `FolderRunsRepository`: mantiene el manifiesto y carga fuentes bajo demanda.
+- `createDefaultRunsRepositories`: configura los adaptadores concretos usados por `main.ts`.
 
-La clase depende de los puertos `RunsRepository` e `InventoryRepository`, no de implementaciones concretas. Para añadir una API, IndexedDB o una fuente cacheada solo es necesario implementar el puerto correspondiente y registrarlo en `main.ts`.
+El parseo del manifiesto y la resolución segura de URLs son detalles internos del adaptador de runs.
 
-## Estado reactivo
+### Presentación
 
-`AppStore` es la fuente única de verdad. Cada comando crea un nuevo objeto de estado y emite una notificación a sus suscriptores:
+- `create-application-shell.ts`: coordina ciclo de vida, suscripciones y limpieza.
+- `bind-application-events.ts`: registra eventos y delega acciones.
+- `render-application-state.ts`: elige el renderer de la vista activa.
+- `inventory/render-inventory.ts`: coordina la vista de inventario.
+- `run-list/render-run-list.ts`: actualiza resumen, lista y paginación.
+- `run-filters/render-run-filter-options.ts`: renderiza opciones dependientes de la fuente.
+- `localization/locale.ts`: mantiene el locale observable.
+- `localization/translate-document.ts`: traduce el DOM estático y los templates.
+- `items/item-presentation.ts`: adapta nombres y assets canónicos para la UI.
+
+Los componentes Astro contienen únicamente markup estático. No se hidratan componentes ni se introduce un framework UI; `main.ts` continúa siendo el único composition root del cliente.
+
+## Dirección permitida de dependencias
 
 ```text
-evento DOM -> caso de uso -> AppStore.commit -> suscriptores -> render
+shared -> ninguna capa
+domain -> shared
+app -> domain, shared
+infrastructure -> app, domain, shared
+ui -> app, domain, data, generated, shared
+main.ts -> app, infrastructure, ui
 ```
 
-El store normaliza y congela los runs que recibe, clona sus `Map` internos al exponer snapshots y vuelve a clonar el inventario antes de actualizarlo. Una vista o prueba no puede alterar el estado interno ni observar mutaciones retroactivas. Sus contratos exponen colecciones de solo lectura. El estado reúne runs, catálogo, inventario, filtros, búsquedas y un estado discriminado de carga/error que no permite combinaciones inválidas.
+Además:
 
-## Infraestructura
+- Una feature no puede importar el directorio `internal/` de otra feature.
+- Dominio y aplicación no pueden usar DOM, `fetch`, `localStorage` ni assets.
+- Infraestructura no puede depender de UI.
+- UI no puede depender de implementaciones de infraestructura.
+- Las pruebas `layer-boundaries.test.mjs` comprueban estas reglas y la ausencia de ciclos.
 
-- `LocalStorageInventoryRepository` adapta `localStorage` al puerto de inventario.
-- `HttpRunsRepository` adapta cualquier endpoint JSON al puerto de runs.
-- `FolderRunsRepository` carga el manifiesto generado de `runs/`, trae inicialmente la versión de juego más nueva y obtiene las demás bajo demanda. La fecha estable del dataset y la ruta resuelven empates de forma determinista.
-- `createDefaultRunsRepositories` configura la carpeta local como fuente predeterminada.
-- `BrowserJsonFileGateway` encapsula lectura y descarga de archivos del navegador.
+## Flujo de estado
 
-Los fallos de una fuente de runs no contaminan el caso de uso: la aplicación intenta el siguiente repositorio configurado y solo publica un error cuando todos fallan.
+```text
+evento DOM
+  -> HertaApplication
+  -> acción de inventario o runs
+  -> AppStore.commit
+  -> suscriptores
+  -> renderApplicationState
+  -> renderer de la feature activa
+```
 
-## Presentación
+`AppStore` normaliza y congela runs, clona inventarios y catálogos al exponer snapshots y usa un estado discriminado de carga/error. Los efectos de persistencia y red quedan fuera del store.
 
-`src/pages/index.astro` define el shell HTML y carga `src/main.ts` desde un `<script>` procesado por Vite. `BaseLayout.astro` centraliza el documento base, los metadatos y los estilos globales.
+## Cómo agregar una funcionalidad
 
-En el cliente, `AppViewController` conecta eventos DOM con comandos de aplicación y se suscribe al store. Los renders reciben datos y callbacks; no persisten datos ni modifican directamente el inventario.
+1. Identificar la capa propietaria de la regla.
+2. Crear una carpeta de feature solo si existen al menos dos responsabilidades cohesionadas o una frontera interna que proteger.
+3. Definir tipos y funciones puras en dominio antes de agregar efectos.
+4. Exponer un caso de uso o puerto específico desde aplicación cuando la UI o infraestructura lo necesiten.
+5. Mantener render, elementos DOM y eventos dentro de la feature visual.
+6. Importar archivos públicos de forma explícita; usar `internal/` solo dentro de la misma feature.
+7. Añadir pruebas a la función pura o al contrato observable, no a delegaciones triviales.
+8. Ejecutar typecheck, pruebas, límites, Astro Check, lint, formato y build.
 
-`item-presentation.ts` adapta nombres canónicos del dominio a etiquetas localizadas y URLs de imágenes. De este modo, los archivos generados y las traducciones permanecen en presentación. `inventory-search.ts` mantiene las búsquedas como transformaciones puras y comprobables.
+## Prevención de módulos monolíticos
 
-`main.ts` funciona únicamente como composition root: instancia el store, los adaptadores, la aplicación y el controlador de vista.
+Un módulo debe revisarse cuando coordina y ejecuta detalles al mismo tiempo, mezcla cálculo con efectos o cambia por varias razones. La división debe realizarse por responsabilidad, no por número de líneas.
+
+Antes de crear un archivo nuevo:
+
+- su responsabilidad debe poder describirse en una frase;
+- debe reducir acoplamiento, complejidad o necesidad de mocks;
+- su API pública debe ser mínima;
+- helpers triviales y exclusivos deben permanecer privados;
+- archivos de datos extensos no deben fragmentarse sin beneficio;
+- no deben crearse barrels que oculten la procedencia de dependencias.
+
+Los coordinadores ensamblan funciones; no contienen validadores, HTML detallado, persistencia ni reglas de negocio. Los renderizadores reciben datos preparados y callbacks explícitos.
 
 ## Build y pruebas
 
-`scripts/build.mjs` genera primero `runs/index.json`, invoca el build estatico de Astro y copia `assets/` y `runs/` al resultado. Astro genera el HTML y Vite empaqueta el entrypoint del cliente y sus imports en `dist/_astro/`.
+`scripts/build.mjs` genera `runs/index.json`, ejecuta el build estático de Astro y copia `assets/` y `runs/` a `dist/`. Las pruebas transpilan TypeScript a `.test-dist/`, separado del bundle de producción.
 
-`dist/` queda como un artefacto cerrado: contiene `index.html`, los bundles versionados, las imagenes y las colecciones de runs. El servidor local y los despliegues consumen ese directorio sin leer archivos fuente del repositorio.
-
-Las pruebas no reutilizan el bundle de producción. `scripts/build-test-modules.mjs` transpila los modulos TypeScript a `.test-dist/`, un directorio ignorado por Git, y `node --test` importa esos modulos.
-
-Las pruebas cubren tanto reglas de dominio como límites arquitectónicos: scoring, validación profunda de inventarios, manifiestos y runs reales, cancelación lógica de cargas obsoletas, snapshots defensivos del store, fallback de repositorios y persistencia de comandos. Un test estático impide dependencias hacia capas superiores y ciclos entre módulos.
-
-Comandos de validación:
+Comandos principales:
 
 ```powershell
 pnpm check
-pnpm format:check
 pnpm build
 ```

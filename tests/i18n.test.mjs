@@ -1,10 +1,11 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { selectResults } from "../.test-dist/app/results.js";
-import { AppStore } from "../.test-dist/app/state.js";
-import { createCatalogFromRuns } from "../.test-dist/domain/catalog.js";
-import { itemLabel, localizedRunSearchText } from "../.test-dist/ui/item-presentation.js";
+import { AppStore } from "../.test-dist/app/application-state/app-store.js";
+import { selectResults } from "../.test-dist/app/results/select-results.js";
+import { createCatalogFromRuns } from "../.test-dist/domain/catalog/create-catalog.js";
+import { itemLabel } from "../.test-dist/ui/items/item-presentation.js";
+import { localizedRunSearchText } from "../.test-dist/ui/items/item-search.js";
 
 test("catalog exposes Spanish character and Light Cone labels without changing canonical names", () => {
   const catalog = createCatalogFromRuns([

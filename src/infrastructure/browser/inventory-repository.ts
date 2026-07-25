@@ -1,11 +1,11 @@
-import type { InventoryRepository } from "../../app/ports.js";
+import type { InventoryRepository } from "../../app/inventory/inventory-repository.js";
+import { createEmptyInventory } from "../../domain/inventory/create-inventory.js";
 import {
-  createEmptyInventory,
   importInventory,
   inventoryStorageKey,
   serializeInventory,
-} from "../../domain/inventory.js";
-import type { Inventory } from "../../domain/types.js";
+} from "../../domain/inventory/inventory-serialization.js";
+import type { Inventory } from "../../domain/inventory/inventory.types.js";
 
 export class LocalStorageInventoryRepository implements InventoryRepository {
   constructor(

@@ -4,11 +4,12 @@ import { join } from "node:path";
 import test from "node:test";
 import { fileURLToPath } from "node:url";
 
-import { importInventory } from "../.test-dist/domain/inventory.js";
-import { normalizeRuns, parseRawRunsPayload } from "../.test-dist/domain/normalize.js";
+import { importInventory } from "../.test-dist/domain/inventory/inventory-serialization.js";
+import { normalizeRuns } from "../.test-dist/domain/runs/normalize-runs.js";
+import { parseRawRunsPayload } from "../.test-dist/domain/runs/parse-runs-payload.js";
 import { LocalStorageInventoryRepository } from "../.test-dist/infrastructure/browser/inventory-repository.js";
-import { HttpRunsRepository } from "../.test-dist/infrastructure/http/runs-repository.js";
-import { FolderRunsRepository } from "../.test-dist/infrastructure/http/folder-runs-repository.js";
+import { FolderRunsRepository } from "../.test-dist/infrastructure/http/runs/folder-runs-repository.js";
+import { HttpRunsRepository } from "../.test-dist/infrastructure/http/runs/http-runs-repository.js";
 
 const runsRoot = fileURLToPath(new URL("../runs/", import.meta.url));
 

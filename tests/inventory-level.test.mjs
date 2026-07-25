@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { stepInventoryLevel } from "../.test-dist/domain/inventory.js";
+import { stepInventoryLevel } from "../.test-dist/domain/inventory/inventory-levels.js";
 
 test("plus and minus traverse character eidolons including unowned", () => {
   assert.equal(stepInventoryLevel("character", undefined, 1), 0);

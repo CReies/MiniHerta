@@ -1,10 +1,10 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { HertaApplication } from "../.test-dist/app/application.js";
-import { AppStore } from "../.test-dist/app/state.js";
+import { AppStore } from "../.test-dist/app/application-state/app-store.js";
+import { HertaApplication } from "../.test-dist/app/herta-application.js";
 import { LocalStorageInventoryRepository } from "../.test-dist/infrastructure/browser/inventory-repository.js";
-import { FolderRunsRepository } from "../.test-dist/infrastructure/http/folder-runs-repository.js";
+import { FolderRunsRepository } from "../.test-dist/infrastructure/http/runs/folder-runs-repository.js";
 
 function makeRawRun(id = "run-1") {
   return {
