@@ -1,4 +1,5 @@
 import type { RunSource } from "../../../../app/runs/runs-repository.js";
+import { canonicalEndgame } from "../../../../domain/runs/endgame.js";
 
 export function parseRunsManifest(value: unknown): RunSource[] {
   if (!isRecord(value)) {
@@ -33,7 +34,7 @@ function parseSources(manifest: Record<string, unknown>): RunSource[] {
       if (!isRunSource(source)) {
         throw new TypeError(`Invalid runs manifest: source ${index} is invalid`);
       }
-      return source;
+      return { ...source, endgame: canonicalEndgame(source.endgame) };
     });
   }
 
@@ -56,7 +57,7 @@ function sourceFromLegacyPath(file: string): RunSource {
   const parts = file.split("/");
   return {
     file,
-    endgame: parts.at(-2) || "Unknown",
+    endgame: canonicalEndgame(parts.at(-2) || "Unknown"),
     version: (parts.at(-1) || "").replace(/\.json$/i, ""),
     updatedAt: "",
   };

@@ -37,7 +37,7 @@ export function bindApplicationEvents(options: BindApplicationEventsOptions): ()
       void application.selectRunSource(elements.filters.endgameFilter.value, elements.filters.versionFilter.value);
     });
   }
-  for (const element of [elements.filters.lcMode, elements.filters.resultSearch]) {
+  for (const element of [elements.filters.bossFilter, elements.filters.lcMode, elements.filters.resultSearch]) {
     listen(removers, element, "input", () => {
       options.onResultCriteriaChanged();
       application.updateFilters(readRunFilters(elements.filters));

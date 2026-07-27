@@ -3,6 +3,7 @@ import type { FilterState, LcMode } from "../../domain/scoring/scoring.types.js"
 export interface RunFilterElements {
   readonly endgameFilter: HTMLSelectElement;
   readonly versionFilter: HTMLSelectElement;
+  readonly bossFilter: HTMLSelectElement;
   readonly lcMode: HTMLSelectElement;
   readonly resultSearch: HTMLInputElement;
 }
@@ -11,6 +12,7 @@ export function queryRunFilterElements(): RunFilterElements {
   return {
     endgameFilter: requireElement("endgameFilter", HTMLSelectElement),
     versionFilter: requireElement("versionFilter", HTMLSelectElement),
+    bossFilter: requireElement("bossFilter", HTMLSelectElement),
     lcMode: requireElement("lcMode", HTMLSelectElement),
     resultSearch: requireElement("resultSearch", HTMLInputElement),
   };
@@ -20,6 +22,7 @@ export function readRunFilters(elements: RunFilterElements): Partial<FilterState
   return {
     endgame: elements.endgameFilter.value,
     version: elements.versionFilter.value,
+    boss: elements.bossFilter.value,
     lcMode: parseLcMode(elements.lcMode.value),
     resultSearch: elements.resultSearch.value,
   };

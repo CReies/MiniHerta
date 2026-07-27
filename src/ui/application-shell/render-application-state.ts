@@ -59,6 +59,8 @@ function renderTeamFinderView(options: RenderApplicationStateOptions): void {
     state.runSources.length > 0 ? state.runSources : state.runs,
     state.filters.endgame,
     state.filters.version,
+    state.runs,
+    state.filters.boss,
     getLocale()
   );
 

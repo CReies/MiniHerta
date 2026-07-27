@@ -1,4 +1,5 @@
 import { parseRawRunsPayload } from "../../domain/runs/parse-runs-payload.js";
+import { allBosses } from "../../domain/runs/boss-filter.js";
 import type { AppStore } from "../application-state/app-store.js";
 import { loadInitialRunRepository, loadSelectedRunSources } from "./internal/load-run-repository.js";
 import { selectRunSources } from "./internal/select-run-sources.js";
@@ -56,7 +57,7 @@ export class RunActions {
   async selectSource(endgame: string, requestedVersion: string): Promise<void> {
     const repository = this.selectableRepository;
     if (!repository || this.runSources.length === 0) {
-      this.store.updateFilters({ endgame, version: requestedVersion });
+      this.store.updateFilters({ endgame, version: requestedVersion, boss: allBosses });
       this.onFilterOnlySelection();
       return;
     }
@@ -67,9 +68,10 @@ export class RunActions {
     const previousSelection = {
       endgame: this.store.snapshot.filters.endgame,
       version: this.store.snapshot.filters.version,
+      boss: this.store.snapshot.filters.boss,
     };
     const sequence = ++this.loadSequence;
-    this.store.updateFilters({ endgame, version: selection.version });
+    this.store.updateFilters({ endgame, version: selection.version, boss: allBosses });
     this.store.setStatus({ type: "loading", message: "loadingRuns" });
 
     try {

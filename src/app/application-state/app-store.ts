@@ -2,6 +2,7 @@ import { createCatalogFromRuns, createEmptyCatalog } from "../../domain/catalog/
 import { createEmptyInventory } from "../../domain/inventory/create-inventory.js";
 import type { Inventory } from "../../domain/inventory/inventory.types.js";
 import type { ItemKind } from "../../domain/item.types.js";
+import { allBosses, canonicalBossName } from "../../domain/runs/boss-filter.js";
 import { normalizeRuns } from "../../domain/runs/normalize-runs.js";
 import type { RawRun } from "../../domain/runs/run.types.js";
 import type { FilterState } from "../../domain/scoring/scoring.types.js";
@@ -12,6 +13,7 @@ import { cloneInventory, createStateSnapshot, freezeRuns } from "./internal/stat
 const defaultFilters: FilterState = {
   endgame: "Todos",
   version: "",
+  boss: allBosses,
   resultMode: "all",
   lcMode: "strict",
   resultSearch: "",
@@ -48,6 +50,7 @@ export class AppStore {
     const runs = freezeRuns(normalizeRuns(rawRuns));
     const availableEndgames = new Set(runs.map((run) => run.endgame));
     const availableVersions = new Set(runs.map((run) => run.version));
+    const availableBosses = new Set(runs.map((run) => canonicalBossName(run.boss)));
     const endgame =
       this.state.filters.endgame === "Todos" || availableEndgames.has(this.state.filters.endgame)
         ? this.state.filters.endgame
@@ -55,13 +58,16 @@ export class AppStore {
     const version = availableVersions.has(this.state.filters.version)
       ? this.state.filters.version
       : latestVersion(availableVersions);
+    const boss = availableBosses.has(canonicalBossName(this.state.filters.boss))
+      ? canonicalBossName(this.state.filters.boss)
+      : allBosses;
 
     this.commit({
       ...this.state,
       runs,
       catalog: createCatalogFromRuns(runs),
       inventory: cloneInventory(this.state.inventory),
-      filters: { ...this.state.filters, endgame, version },
+      filters: { ...this.state.filters, endgame, version, boss },
     });
   }
 

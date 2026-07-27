@@ -1,7 +1,8 @@
 import type { RawRun, Run, TeamMember } from "./run.types.js";
+import { canonicalEndgame } from "./endgame.js";
 
 export function normalizeRuns(rawRuns: RawRun[]): Run[] {
-  return rawRuns.map(normalizeRun).filter((run) => run.subcategory === "0-Cycle" || run.metricValue === 0);
+  return rawRuns.map(normalizeRun).filter(isTopPerformanceRun);
 }
 
 function normalizeRun(raw: RawRun): Run {
@@ -24,7 +25,7 @@ function normalizeRun(raw: RawRun): Run {
     id: stringValue(raw.id, "sin-id"),
     author: stringValue(data.author_name, stringValue(raw.author_name, "Unknown")),
     boss: stringValue(data.boss_name, stringValue(raw.boss_name, "Unknown")),
-    endgame: stringValue(data.mode, stringValue(raw.mode, "Unknown")),
+    endgame: canonicalEndgame(stringValue(data.mode, stringValue(raw.mode, "Unknown"))),
     version: stringValue(data.season, stringValue(raw.season, "Unknown")),
     videoUrl: httpUrlValue(data.video_url),
     videoDate: stringValue(data.video_date, stringValue(raw.created_at, "")),
@@ -34,6 +35,10 @@ function normalizeRun(raw: RawRun): Run {
     standardCost: numberValue(data.total_standard_5star_count, 0),
     team,
   };
+}
+
+function isTopPerformanceRun(run: Run): boolean {
+  return run.subcategory === "0-Cycle" || run.subcategory.toLowerCase() === "0 av" || run.metricValue === 0;
 }
 
 function stringValue(value: unknown, fallback: string): string {

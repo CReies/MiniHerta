@@ -1,4 +1,5 @@
 import { normalizeText } from "../../shared/normalize-text.js";
+import { matchesBoss } from "../runs/boss-filter.js";
 import type { Run } from "../runs/run.types.js";
 import type { EvaluatedRun, FilterState } from "./scoring.types.js";
 
@@ -7,6 +8,7 @@ export const nearScoreLimit = 220;
 export function matchesFilters(run: Run, filters: FilterState, additionalSearchText = ""): boolean {
   if (filters.endgame && filters.endgame !== "Todos" && run.endgame !== filters.endgame) return false;
   if (filters.version && run.version !== filters.version) return false;
+  if (!matchesBoss(run.boss, filters.boss)) return false;
 
   const query = normalizeText(filters.resultSearch);
   if (!query) return true;

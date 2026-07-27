@@ -1,7 +1,12 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 
-import { collectionUpdatedAt, sortRunSources } from "../scripts/run-manifest.mjs";
+import { canonicalEndgame, collectionUpdatedAt, sortRunSources } from "../scripts/run-manifest.mjs";
+
+test("run manifest canonicalizes endgame directory aliases", () => {
+  assert.equal(canonicalEndgame("AS"), "Apocalyptic Shadow");
+  assert.equal(canonicalEndgame("Apocalyptic Shadow"), "Apocalyptic Shadow");
+});
 
 test("run manifest dates are stable data, not checkout mtimes", () => {
   assert.equal(

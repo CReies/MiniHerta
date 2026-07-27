@@ -17,6 +17,7 @@
       "total_standard_5star_count": 0,
       "display_flags": [],
       "scheduled_submission": false,
+      "video_collaborators": [],
       "p1_char": "Castorice",
       "p1_eidolon": 0,
       "p1_lc": "Make Farewells More Beautiful",
@@ -51,6 +52,7 @@
       "total_standard_5star_count": 0,
       "display_flags": [],
       "scheduled_submission": false,
+      "video_collaborators": [],
       "p1_char": "The Herta",
       "p1_eidolon": 2,
       "p1_lc": "Into the Unreachable Veil",
@@ -69,5 +71,6 @@
       "p4_superimp": 5
     }
   ],
-  "count": 2
+  "count": 2,
+  "updatedAt": "2026-07-27T04:37:21.695Z"
 }

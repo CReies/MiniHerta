@@ -24,6 +24,7 @@ export interface EvaluatedRun extends Run {
 export interface FilterState {
   readonly endgame: string;
   readonly version: string;
+  readonly boss: string;
   readonly resultMode: ResultMode;
   readonly lcMode: LcMode;
   readonly resultSearch: string;

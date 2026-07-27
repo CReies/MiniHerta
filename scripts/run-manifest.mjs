@@ -32,7 +32,7 @@ export async function collectRunSources(runsRoot, directory = runsRoot) {
       return [
         {
           file: relative(runsRoot, absolutePath).replaceAll("\\", "/"),
-          endgame: String(data.mode ?? firstRun.mode ?? relative(runsRoot, dirname(absolutePath))),
+          endgame: canonicalEndgame(String(data.mode ?? firstRun.mode ?? relative(runsRoot, dirname(absolutePath)))),
           version: String(data.season ?? firstRun.season ?? basename(entry.name, ".json")),
           updatedAt: collectionUpdatedAt(payload),
         },
@@ -72,6 +72,26 @@ export function sortRunSources(sources) {
       b.updatedAt.localeCompare(a.updatedAt) ||
       a.file.localeCompare(b.file)
   );
+}
+
+/**
+ * @param {string} value
+ * @returns {string}
+ */
+export function canonicalEndgame(value) {
+  /** @type {Record<string, string>} */
+  const aliases = {
+    aa: "Anomaly Arbitration",
+    "anomaly arbitration": "Anomaly Arbitration",
+    as: "Apocalyptic Shadow",
+    "apocalyptic shadow": "Apocalyptic Shadow",
+    moc: "Memory of Chaos",
+    "memory of chaos": "Memory of Chaos",
+    pf: "Pure Fiction",
+    "pure fiction": "Pure Fiction",
+  };
+  const trimmed = value.trim();
+  return aliases[trimmed.toLowerCase()] ?? trimmed;
 }
 
 /**

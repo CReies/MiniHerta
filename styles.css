@@ -1010,7 +1010,9 @@ select option {
 
 .filter-grid {
   display: grid;
-  grid-template-columns: minmax(160px, 0.9fr) minmax(100px, 0.55fr) minmax(190px, 1fr) minmax(240px, 1.35fr);
+  grid-template-columns:
+    minmax(150px, 0.8fr) minmax(90px, 0.45fr) minmax(190px, 1fr) minmax(180px, 0.9fr)
+    minmax(230px, 1.25fr);
   gap: 12px;
 }
 

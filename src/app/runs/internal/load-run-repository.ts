@@ -1,4 +1,5 @@
 import { parseRawRunsPayload } from "../../../domain/runs/parse-runs-payload.js";
+import { canonicalEndgame } from "../../../domain/runs/endgame.js";
 import type { RawRun } from "../../../domain/runs/run.types.js";
 import type { RunSource, RunsRepository, SelectableRunsRepository } from "../runs-repository.js";
 
@@ -19,7 +20,10 @@ export async function loadInitialRunRepository(repository: RunsRepository): Prom
     };
   }
 
-  const sources = await repository.list();
+  const sources = (await repository.list()).map((source) => ({
+    ...source,
+    endgame: canonicalEndgame(source.endgame),
+  }));
   const initialSource = sources[0];
   if (!initialSource) throw new Error("No hay fuentes de runs disponibles");
 
