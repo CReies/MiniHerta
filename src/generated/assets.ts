@@ -209,6 +209,7 @@ export const lightConeAssets: Record<string, string> = {
   "The Forever Victual": "assets/lightcones/the-forever-victual.webp",
   "The Great Cosmic Enterprise": "assets/lightcones/the-great-cosmic-enterprise.webp",
   "The Hell Where Ideals Burn": "assets/lightcones/the-hell-where-ideals-burn.webp",
+  "The Moles Welcome You": "assets/lightcones/the-moles-welcome-you.webp",
   "The Seriousness of Breakfast": "assets/lightcones/the-seriousness-of-breakfast.webp",
   "The Story's Next Page": "assets/lightcones/the-story-s-next-page.webp",
   "The Unreachable Side": "assets/lightcones/the-unreachable-side.webp",
