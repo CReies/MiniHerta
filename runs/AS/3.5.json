@@ -1,5 +1,49 @@
 {
-  "items": [],
-  "count": 0,
-  "updatedAt": "2026-07-27T04:37:23.152Z"
+  "items": [
+    {
+      "id": "run_dd2rwq",
+      "author_name": "Mewn",
+      "is_anonymous": false,
+      "season": "3.5",
+      "mode": "Apocalyptic Shadow",
+      "boss_name": "Hoolay",
+      "linked_run_id": null,
+      "subcategory": "Clear",
+      "video_url": "https://www.youtube.com/watch?v=gIFcdW2-7qo",
+      "video_date": "2025-08-18T04:04:18Z",
+      "metric_value": 3991,
+      "action_value": null,
+      "total_limited_5star_count": 12,
+      "total_standard_5star_count": 0,
+      "display_flags": [],
+      "scheduled_submission": false,
+      "video_collaborators": [
+        {
+          "platform": "youtube",
+          "name": "Mewn",
+          "role": "Uploader",
+          "url": "https://www.youtube.com/@mewn6143",
+          "avatarUrl": "https://yt3.googleusercontent.com/5KQ03AFCWt63eN0maZoDdqeGt8gNddM-U91H-U2qgsHAa9wK3KmQYqQA_OCn5hknsMR7ALnGbA=s900-c-k-c0x00ffffff-no-rj"
+        }
+      ],
+      "p1_char": "Feixiao",
+      "p1_eidolon": 2,
+      "p1_lc": "I Venture Forth to Hunt",
+      "p1_superimp": 1,
+      "p2_char": "Tribbie",
+      "p2_eidolon": 1,
+      "p2_lc": "Dance Dance Dance",
+      "p2_superimp": 5,
+      "p3_char": "Robin",
+      "p3_eidolon": 2,
+      "p3_lc": "Past Self in Mirror",
+      "p3_superimp": 2,
+      "p4_char": "Trailblazer (Remembrance)",
+      "p4_eidolon": 6,
+      "p4_lc": "Long May Rainbows Adorn the Sky",
+      "p4_superimp": 1
+    }
+  ],
+  "count": 1,
+  "updatedAt": "2026-09-30T06:16:55.571Z"
 }

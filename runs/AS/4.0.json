@@ -307,7 +307,15 @@
       "total_standard_5star_count": 0,
       "display_flags": [],
       "scheduled_submission": false,
-      "video_collaborators": [],
+      "video_collaborators": [
+        {
+          "platform": "youtube",
+          "name": "공0허",
+          "role": "Uploader",
+          "url": "https://www.youtube.com/@Void-Nihility",
+          "avatarUrl": "https://yt3.googleusercontent.com/7yFmSeSGGmxdBJ_G6KUYdCs2oOceZnJgiD8RtM5Hfrf0cGpKyIpbq42oi9DyB0GXOdxSKPPujXk=s900-c-k-c0x00ffffff-no-rj"
+        }
+      ],
       "p1_char": "Xueyi",
       "p1_eidolon": 6,
       "p1_lc": "On the Fall of an Aeon",
@@ -342,7 +350,15 @@
       "total_standard_5star_count": 0,
       "display_flags": [],
       "scheduled_submission": false,
-      "video_collaborators": [],
+      "video_collaborators": [
+        {
+          "platform": "youtube",
+          "name": "Areilyn",
+          "role": "Uploader",
+          "url": "https://www.youtube.com/@areilyn",
+          "avatarUrl": "https://yt3.googleusercontent.com/xYz4PKoPrLGgTEMVbAQbbEC8PlwDNOiIym5g050pQhkgqd7xrtrlt0fnHpcYb_Pff3WsZg6qCQ=s900-c-k-c0x00ffffff-no-rj"
+        }
+      ],
       "p1_char": "Phainon",
       "p1_eidolon": 2,
       "p1_lc": "Thus Burns the Dawn",
@@ -4305,6 +4321,49 @@
       "p4_eidolon": 0,
       "p4_lc": "This Love, Forever",
       "p4_superimp": 1
+    },
+    {
+      "id": "run_109525",
+      "author_name": "Yolkkyz",
+      "is_anonymous": false,
+      "season": "4.0",
+      "mode": "Apocalyptic Shadow",
+      "boss_name": "Pollux",
+      "linked_run_id": null,
+      "subcategory": "Clear",
+      "video_url": "https://youtu.be/somveO70CoM",
+      "video_date": "2026-02-04T14:02:09.713Z",
+      "metric_value": 3450,
+      "action_value": null,
+      "total_limited_5star_count": 4,
+      "total_standard_5star_count": 0,
+      "display_flags": [],
+      "scheduled_submission": false,
+      "video_collaborators": [
+        {
+          "platform": "youtube",
+          "name": "Yolkkyz",
+          "role": "Uploader",
+          "url": "https://www.youtube.com/@yolkkyz",
+          "avatarUrl": "https://yt3.googleusercontent.com/bYcIjSlIsUkXCTxwsxjSLBuHu-k6gS2tmSqA6uZULogiKcGZoL_rbtFOajwoZ8iOrOda-d6fXg=s900-c-k-c0x00ffffff-no-rj"
+        }
+      ],
+      "p1_char": "Hyacine",
+      "p1_eidolon": 0,
+      "p1_lc": "Memory's Curtain Never Falls",
+      "p1_superimp": 5,
+      "p2_char": "Trailblazer (Remembrance)",
+      "p2_eidolon": 6,
+      "p2_lc": "Fly Into a Pink Tomorrow",
+      "p2_superimp": 5,
+      "p3_char": "Tribbie",
+      "p3_eidolon": 1,
+      "p3_lc": "Dance Dance Dance",
+      "p3_superimp": 5,
+      "p4_char": "Cyrene",
+      "p4_eidolon": 0,
+      "p4_lc": "Victory In a Blink",
+      "p4_superimp": 5
     },
     {
       "id": "run_958966",
@@ -10398,41 +10457,6 @@
       "p4_superimp": 5
     },
     {
-      "id": "run_109525",
-      "author_name": "Yolkkyz",
-      "is_anonymous": false,
-      "season": "4.0",
-      "mode": "Apocalyptic Shadow",
-      "boss_name": "Pollux",
-      "linked_run_id": null,
-      "subcategory": "Clear",
-      "video_url": "https://youtu.be/somveO70CoM",
-      "video_date": "2026-02-04T14:02:09.713Z",
-      "metric_value": 3450,
-      "action_value": null,
-      "total_limited_5star_count": 4,
-      "total_standard_5star_count": 0,
-      "display_flags": [],
-      "scheduled_submission": false,
-      "video_collaborators": [],
-      "p1_char": "Hyacine",
-      "p1_eidolon": 0,
-      "p1_lc": "Memory's Curtain Never Falls",
-      "p1_superimp": 5,
-      "p2_char": "Trailblazer (Remembrance)",
-      "p2_eidolon": 6,
-      "p2_lc": "Fly Into a Pink Tomorrow",
-      "p2_superimp": 5,
-      "p3_char": "Tribbie",
-      "p3_eidolon": 1,
-      "p3_lc": "Dance Dance Dance",
-      "p3_superimp": 5,
-      "p4_char": "Cyrene",
-      "p4_eidolon": 0,
-      "p4_lc": "Victory In a Blink",
-      "p4_superimp": 5
-    },
-    {
       "id": "run_951640",
       "author_name": "Kagetsurube",
       "is_anonymous": false,
@@ -10469,5 +10493,5 @@
     }
   ],
   "count": 256,
-  "updatedAt": "2026-07-27T04:37:25.242Z"
+  "updatedAt": "2026-09-30T06:16:57.624Z"
 }
