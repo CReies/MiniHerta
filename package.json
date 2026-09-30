@@ -28,7 +28,7 @@
   "packageManager": "pnpm@11.0.0",
   "dependencies": {
     "astro": "^6.4.6"
-},
+  },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
     "@eslint/js": "^10.0.1",
