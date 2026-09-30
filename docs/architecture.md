@@ -42,6 +42,7 @@ src/
     scoring/
       evaluate-run.ts
       filter-runs.ts
+      team-bundle.ts
       scoring.types.ts
   app/
     application-state/
@@ -133,6 +134,7 @@ src/
 - `runs/light-cone-usage.ts`: deriva recomendaciones por personaje.
 - `scoring/evaluate-run.ts`: calcula faltantes y score.
 - `scoring/filter-runs.ts`: filtra, selecciona modos y ordena resultados.
+- `scoring/team-bundle.ts`: selecciona tres equipos compatibles sin repetir personajes y excluye el King en AA.
 
 Los archivos `*.types.ts` contienen únicamente contratos de su feature. `item.types.ts` permanece transversal porque `ItemKind` y `Rarity` son vocabulario común de catálogo, inventario, scoring y presentación.
 
@@ -165,7 +167,7 @@ El parseo del manifiesto y la resolución segura de URLs son detalles internos d
 - `render-application-state.ts`: elige el renderer de la vista activa.
 - `inventory/render-inventory.ts`: coordina la vista de inventario.
 - `run-list/render-run-list.ts`: actualiza resumen, lista y paginación.
-- `run-filters/render-run-filter-options.ts`: renderiza opciones dependientes de la fuente.
+- `run-filters/render-run-filter-options.ts`: renderiza opciones dependientes de la fuente, incluida la selección de tres equipos.
 - `localization/locale.ts`: mantiene el locale observable.
 - `localization/translate-document.ts`: traduce el DOM estático y los templates.
 - `items/item-presentation.ts`: adapta nombres y assets canónicos para la UI.

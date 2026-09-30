@@ -7,10 +7,10 @@ const runsRoot = join(root, "runs");
 const endpoint = "https://theherta.com/api/archive/submissions";
 
 const collections = [
-  { directory: "AA", mode: "Anomaly Arbitration", versions: versionsBetween("3.6", "4.4") },
-  { directory: "PF", mode: "Pure Fiction", versions: versionsBetween("3.3", "4.3") },
-  { directory: "AS", mode: "Apocalyptic Shadow", versions: versionsBetween("3.2", "4.3") },
-  { directory: "MOC", mode: "Memory of Chaos", versions: versionsBetween("3.0", "4.3") },
+  { directory: "AA", mode: "Anomaly Arbitration", versions: versionsBetween("3.6", "4.6") },
+  { directory: "PF", mode: "Pure Fiction", versions: versionsBetween("3.3", "4.6") },
+  { directory: "AS", mode: "Apocalyptic Shadow", versions: versionsBetween("3.2", "4.6") },
+  { directory: "MOC", mode: "Memory of Chaos", versions: versionsBetween("3.0", "4.6") },
 ];
 
 const options = parseArguments(process.argv.slice(2));

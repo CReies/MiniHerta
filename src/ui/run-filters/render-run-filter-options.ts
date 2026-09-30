@@ -1,5 +1,6 @@
 import { t, type Locale } from "../localization/locale.js";
 import { canonicalEndgame } from "../../domain/runs/endgame.js";
+import { supportsThreeTeamSelection, threeTeamSelection } from "../../domain/scoring/team-bundle.js";
 import type { Run } from "../../domain/runs/run.types.js";
 import { allBosses, buildBossFilterOptions } from "./build-boss-filter-options.js";
 import type { RunFilterElements } from "./run-filter-elements.js";
@@ -37,11 +38,26 @@ export function renderRunFilterOptions(
   els.versionFilter.replaceChildren(...versions.map((version) => new Option(version, version)));
   els.versionFilter.value = versions.includes(selectedVersion) ? selectedVersion : (versions[0] ?? "");
 
+  const bundleOption = buildThreeTeamOption(activeEndgame);
   els.bossFilter.replaceChildren(
     new Option(t("filter.all"), allBosses),
+    ...(bundleOption ? [bundleOption] : []),
     ...bosses.map((boss) => new Option(boss.label, boss.value))
   );
-  els.bossFilter.value = bosses.some((boss) => boss.value === selectedBoss) ? selectedBoss : allBosses;
+  const validBosses = new Set([
+    allBosses,
+    ...bosses.map((boss) => boss.value),
+    ...(bundleOption ? [threeTeamSelection] : []),
+  ]);
+  els.bossFilter.value = validBosses.has(selectedBoss) ? selectedBoss : allBosses;
+}
+
+function buildThreeTeamOption(endgame: string): HTMLOptionElement | null {
+  if (!supportsThreeTeamSelection(endgame)) return null;
+
+  const label =
+    canonicalEndgame(endgame) === "Anomaly Arbitration" ? t("filters.threeTeamsKnights") : t("filters.threeTeams");
+  return new Option(label, threeTeamSelection);
 }
 
 function localizedEndgame(value: string, locale: Locale): string {
